@@ -1,0 +1,78 @@
+import type { QuestionDefinition, QuestionSection } from "../../../engine/question-pack.types";
+
+export const section: QuestionSection = {
+  id: "servicios",
+  order: 4,
+  title: "Servicios, disciplinas y productos",
+};
+
+export const questions: QuestionDefinition[] = [
+  {
+    id: "offerings.disciplines",
+    sectionId: "servicios",
+    order: 1,
+    prompt: "¿Qué disciplinas ofreces?",
+    type: "multi_select",
+    required: true,
+    allowSkip: false,
+    allowUnknown: false,
+    options: [
+      { value: "yoga", label: "Yoga" },
+      { value: "pilates", label: "Pilates" },
+      { value: "cycling", label: "Spinning / indoor cycling" },
+      { value: "hiit", label: "HIIT" },
+      { value: "boxing", label: "Boxeo / kickboxing" },
+      { value: "dance", label: "Baile fitness" },
+      { value: "other", label: "Otro" },
+    ],
+    dataTarget: "offerings.disciplines",
+    sensitivity: "public",
+  },
+  {
+    id: "offerings.services_table",
+    sectionId: "servicios",
+    order: 2,
+    prompt: "Cuéntanos tus servicios o clases",
+    helpText: "Agrega una fila por cada servicio o tipo de clase.",
+    type: "editable_table",
+    required: true,
+    allowSkip: true,
+    allowUnknown: false,
+    tableSchema: {
+      minRows: 1,
+      columns: [
+        { key: "name", label: "Servicio o clase", type: "text" },
+        { key: "duration_minutes", label: "Duración (min)", type: "number" },
+        { key: "description", label: "Descripción breve", type: "text" },
+      ],
+    },
+    dataTarget: "offerings.services",
+    sensitivity: "public",
+  },
+  {
+    id: "offerings.sells_products",
+    sectionId: "servicios",
+    order: 3,
+    prompt: "¿Vendes productos además de tus clases?",
+    helpText: "Suplementos, ropa, accesorios, etc.",
+    type: "yes_no",
+    required: true,
+    allowSkip: false,
+    allowUnknown: false,
+    dataTarget: "offerings.sellsProducts",
+    sensitivity: "public",
+  },
+  {
+    id: "offerings.products_notes",
+    sectionId: "servicios",
+    order: 4,
+    prompt: "Cuéntanos qué productos vendes",
+    type: "long_text",
+    required: false,
+    allowSkip: true,
+    allowUnknown: false,
+    conditions: [{ dependsOn: "offerings.sells_products", operator: "equals", value: true }],
+    dataTarget: "offerings.productsNotes",
+    sensitivity: "public",
+  },
+];

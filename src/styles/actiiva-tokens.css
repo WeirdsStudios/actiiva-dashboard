@@ -1,0 +1,65 @@
+/* ACTIIVA Design Tokens v1.0 - USERS.MX
+   Copia manual de ../../../ACTIIVA_Brand_System_v1.0/tokens/actiiva.css (decisión D3).
+   Si el brand system cambia de versión, volver a copiar este archivo a mano. */
+:root {
+  --actiiva-deep-space: #222931;
+  --actiiva-graphite-blue: #414D5A;
+  --actiiva-steel-mist: #7B8695;
+  --actiiva-frost: #DADEE2;
+  --actiiva-vapor-white: #F2F3F5;
+  --actiiva-soft-lime: #F5F9C0;
+  --actiiva-lumen-haze: #E9EF14;
+  --actiiva-white: #FFFFFF;
+
+  --color-canvas: var(--actiiva-vapor-white);
+  --color-surface: var(--actiiva-white);
+  --color-surface-subtle: var(--actiiva-frost);
+  --color-text-primary: var(--actiiva-deep-space);
+  --color-text-secondary: var(--actiiva-graphite-blue);
+  --color-text-muted: var(--actiiva-steel-mist);
+  --color-border: var(--actiiva-frost);
+  --color-action-primary: var(--actiiva-graphite-blue);
+  --color-action-primary-hover: var(--actiiva-deep-space);
+  --color-signal: var(--actiiva-lumen-haze);
+  --color-signal-soft: var(--actiiva-soft-lime);
+  --color-focus-outline: var(--actiiva-graphite-blue);
+
+  --color-success: #3F6B5A; --color-success-surface: #E7F0EC;
+  --color-warning: #806B36; --color-warning-surface: #F4EFD9;
+  --color-danger: #8A4D4D; --color-danger-surface: #F5E8E8;
+  --color-info: #4B6578; --color-info-surface: #E9EFF3;
+
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", SFMono-Regular, Consolas, monospace;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
+  --shadow-sm: 0 1px 2px rgba(34,41,49,.06);
+  --shadow-md: 0 8px 24px rgba(34,41,49,.08);
+  --shadow-lg: 0 18px 48px rgba(34,41,49,.12);
+  --motion-fast: 120ms; --motion-base: 180ms; --motion-slow: 240ms;
+  --ease-standard: cubic-bezier(.2,0,0,1);
+
+  /* Tenant variables: public site and client portal only. */
+  --tenant-primary: var(--actiiva-graphite-blue);
+  --tenant-secondary: var(--actiiva-steel-mist);
+  --tenant-accent: var(--actiiva-soft-lime);
+}
+
+[data-theme="dark"] {
+  --color-canvas: #171D23;
+  --color-surface: var(--actiiva-deep-space);
+  --color-surface-subtle: #2D3640;
+  --color-text-primary: var(--actiiva-vapor-white);
+  --color-text-secondary: #C3CBD3;
+  --color-text-muted: #9AA5B0;
+  --color-border: var(--actiiva-graphite-blue);
+  --color-action-primary: var(--actiiva-vapor-white);
+  --color-action-primary-hover: var(--actiiva-white);
+  --color-signal-soft: rgba(245,249,192,.14);
+  --color-focus-outline: var(--actiiva-vapor-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-outline);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(233,239,20,.22);
+}

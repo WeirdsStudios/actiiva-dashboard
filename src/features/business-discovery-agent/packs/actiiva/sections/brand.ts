@@ -1,0 +1,73 @@
+import type { QuestionDefinition, QuestionSection } from "../../../engine/question-pack.types";
+
+export const section: QuestionSection = {
+  id: "marca",
+  order: 2,
+  title: "Identidad y activos de marca",
+};
+
+export const questions: QuestionDefinition[] = [
+  {
+    id: "brand.identity_status",
+    sectionId: "marca",
+    order: 1,
+    prompt: "¿Qué tan definida está tu identidad visual hoy?",
+    type: "quick_options",
+    required: true,
+    allowSkip: false,
+    allowUnknown: false,
+    options: [
+      { value: "defined", label: "Ya tengo logo y colores definidos" },
+      { value: "basic", label: "Tengo algo básico" },
+      { value: "none", label: "No tengo nada" },
+    ],
+    dataTarget: "brand-profile.identityStatus",
+    sensitivity: "public",
+  },
+  {
+    id: "brand.logo_file",
+    sectionId: "marca",
+    order: 2,
+    prompt: "Sube tu logo",
+    helpText: "En el formato que tengas — lo ajustamos nosotros.",
+    type: "file_upload",
+    required: false,
+    allowSkip: true,
+    allowUnknown: false,
+    fileConstraint: { accept: ["image/png", "image/jpeg", "image/svg+xml"], maxSizeMb: 10, maxFiles: 3 },
+    conditions: [{ dependsOn: "brand.identity_status", operator: "notEquals", value: "none" }],
+    dataTarget: "asset-manifest.logoFiles",
+    sensitivity: "public",
+  },
+  {
+    id: "brand.colors",
+    sectionId: "marca",
+    order: 3,
+    prompt: "¿Tienes colores de marca ya definidos?",
+    helpText: "Descríbelos o pega los códigos si los conoces (ej. #222931).",
+    type: "short_text",
+    required: false,
+    allowSkip: true,
+    allowUnknown: false,
+    dataTarget: "brand-profile.colorNotes",
+    sensitivity: "public",
+  },
+  {
+    id: "brand.tone",
+    sectionId: "marca",
+    order: 4,
+    prompt: "¿Cómo quieres que se sienta tu marca?",
+    type: "quick_options",
+    required: true,
+    allowSkip: false,
+    allowUnknown: false,
+    options: [
+      { value: "warm_motivating", label: "Cercana y motivadora" },
+      { value: "professional", label: "Profesional y seria" },
+      { value: "energetic", label: "Enérgica y directa" },
+      { value: "other", label: "Otro" },
+    ],
+    dataTarget: "brand-profile.toneOfVoice",
+    sensitivity: "public",
+  },
+];
