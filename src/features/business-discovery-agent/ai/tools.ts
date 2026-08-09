@@ -91,4 +91,15 @@ export const CONFIRM_SECTION_RESPONSES_TOOL: Anthropic.Tool = {
   },
 };
 
-export const DISCOVERY_AGENT_TOOLS: Anthropic.Tool[] = [SAVE_DISCOVERY_RESPONSE_TOOL, CONFIRM_SECTION_RESPONSES_TOOL];
+export const CLOSE_DISCOVERY_SESSION_TOOL: Anthropic.Tool = {
+  name: "close_discovery_session",
+  description:
+    "Marca la sesión de discovery como terminada (status 'submitted'). Llámala SOLO inmediatamente después de que el usuario confirmó explícitamente, en respuesta a un resumen breve que le diste, que ya está todo listo (ej. 'sí, así está bien', 'perfecto', 'ya quedó'). Nunca la llames sin esa confirmación explícita en el mismo turno — si tienes duda de si confirmó, pregunta de nuevo en vez de cerrar.",
+  input_schema: { type: "object", properties: {}, required: [] },
+};
+
+export const DISCOVERY_AGENT_TOOLS: Anthropic.Tool[] = [
+  SAVE_DISCOVERY_RESPONSE_TOOL,
+  CONFIRM_SECTION_RESPONSES_TOOL,
+  CLOSE_DISCOVERY_SESSION_TOOL,
+];

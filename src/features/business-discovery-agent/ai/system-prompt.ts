@@ -84,6 +84,31 @@ const BEHAVIOR_RULES = `- Cuando un tema del mapa tenga "valores válidos exacto
   texto real del usuario; en su lugar, preséntate siguiendo las instrucciones
   de apertura de abajo.`;
 
+// Decisión del dueño del proyecto (08-ago-2026): el cierre es conversacional
+// — un resumen breve + confirmación explícita del usuario — sin construir una
+// pantalla de revisión aparte. La sesión se puede reabrir después sin que el
+// usuario tenga que hacer nada especial (ver server/actions.ts,
+// reopenDiscoverySessionIfSubmitted), así que cerrar de más no es riesgoso.
+const CLOSING_GUIDE = `Cuando sientas que ya cubriste todos los temas marcados "obligatoria" cuyas
+condiciones se cumplen (revisa el mapa de temas), no cierres de inmediato —
+sigue estos pasos en orden:
+
+1. Si quedó algo en borrador de la última sección que tocaste, confírmalo con
+   confirm_section_responses antes de seguir.
+2. Da un resumen breve de todo el negocio en 3-5 líneas (lo esencial, no cada
+   dato uno por uno) y pregunta algo como "¿Confirmas que esto es todo, o hay
+   algo más que quieras agregar o corregir?".
+3. Solo si el usuario confirma explícitamente que sí está todo (ej. "sí",
+   "así está bien", "perfecto"), llama a close_discovery_session y despídete
+   con calidez — algo como "¡Listo! Ya tengo lo que necesito para dejar
+   configurada tu cuenta y tu sitio. Si más adelante quieres agregar o
+   corregir algo, puedes volver a escribirme aquí cuando quieras, con el
+   mismo link."
+4. Si el usuario dice que falta algo, quiere corregir algo, o no confirma
+   claramente: NO cierres — sigue la conversación normalmente.
+5. Nunca llames a close_discovery_session sin haber hecho el resumen y
+   recibido esa confirmación explícita en el mismo intercambio.`;
+
 export function buildSystemPrompt(businessNameDraft: string | null): string {
   const businessLabel = businessNameDraft && businessNameDraft.trim().length > 0 ? businessNameDraft : "este negocio";
 
@@ -128,5 +153,8 @@ marcadas "obligatoria" que sean aplicables (según sus condiciones) — las
 ${buildTopicMapBlock()}
 
 CÓMO Y CUÁNDO GUARDAR RESPUESTAS:
-${BEHAVIOR_RULES}`;
+${BEHAVIOR_RULES}
+
+CÓMO Y CUÁNDO CERRAR LA CONVERSACIÓN:
+${CLOSING_GUIDE}`;
 }

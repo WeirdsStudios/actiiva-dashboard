@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { QuestionDefinition } from "../engine/question-pack.types";
 import { type ChatTurnView, sendChatMessage, startConversation } from "../server/chat-actions";
+import { DiscoverySessionPausedScreen } from "./DiscoverySessionPausedScreen";
 import { DiscoveryWelcomeScreen } from "./DiscoveryWelcomeScreen";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { UsersSignature } from "./UsersSignature";
@@ -21,6 +22,7 @@ export function DiscoveryChatScreen({
   initialHistory,
 }: DiscoveryChatScreenProps) {
   const [hasStarted, setHasStarted] = useState(initialHistory.length > 0);
+  const [isPaused, setIsPaused] = useState(false);
   const [messages, setMessages] = useState<ChatTurnView[]>(initialHistory);
   const [input, setInput] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -75,14 +77,27 @@ export function DiscoveryChatScreen({
     return <DiscoveryWelcomeScreen onStart={handleStart} />;
   }
 
+  if (isPaused) {
+    return <DiscoverySessionPausedScreen onResume={() => setIsPaused(false)} />;
+  }
+
   return (
     <div className="mx-auto flex h-screen max-w-md flex-col bg-canvas">
-      <header className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <img src="/brand/actiiva-symbol-primary.svg" alt="ACTIIVA" className="h-7 w-auto" />
-        <div className="flex flex-col leading-tight">
-          <span className="text-sm font-medium text-foreground">Configuración de tu negocio</span>
-          {businessNameDraft && <span className="text-xs text-muted">{businessNameDraft}</span>}
+      <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <img src="/brand/actiiva-symbol-primary.svg" alt="ACTIIVA" className="h-7 w-auto shrink-0" />
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-sm font-medium text-foreground">Configuración de tu negocio</span>
+            {businessNameDraft && <span className="truncate text-xs text-muted">{businessNameDraft}</span>}
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setIsPaused(true)}
+          className="shrink-0 rounded-md border border-border px-2.5 py-1.5 text-xs text-secondary"
+        >
+          Pausar
+        </button>
       </header>
 
       <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">

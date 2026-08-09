@@ -2,6 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { anthropicClient, DISCOVERY_AGENT_MODEL } from "./client";
 import { buildSystemPrompt } from "./system-prompt";
 import {
+  CLOSE_DISCOVERY_SESSION_TOOL,
   CONFIRM_SECTION_RESPONSES_TOOL,
   DISCOVERY_AGENT_TOOLS,
   SAVE_DISCOVERY_RESPONSE_TOOL,
@@ -9,7 +10,7 @@ import {
   type ConfirmSectionResponsesInput,
   type SaveDiscoveryResponseInput,
 } from "./tools";
-import { confirmDraftResponses, saveResponse, updateBusinessNameDraft } from "../server/actions";
+import { closeDiscoverySession, confirmDraftResponses, saveResponse, updateBusinessNameDraft } from "../server/actions";
 
 // Preguntas cuyo valor, al guardarse, también se refleja en
 // discovery_sessions.business_name_draft — por ahora solo el nombre del
@@ -69,6 +70,12 @@ async function executeTool(
     const result = await confirmDraftResponses(sessionId, input.question_ids);
     if (!result.ok) return { content: `No se pudo confirmar: ${result.error}`, isError: true };
     return { content: "confirmado", isError: false };
+  }
+
+  if (block.name === CLOSE_DISCOVERY_SESSION_TOOL.name) {
+    const result = await closeDiscoverySession(sessionId);
+    if (!result.ok) return { content: `No se pudo cerrar la sesión: ${result.error}`, isError: true };
+    return { content: "sesión cerrada", isError: false };
   }
 
   return { content: `Tool desconocido: ${block.name}`, isError: true };

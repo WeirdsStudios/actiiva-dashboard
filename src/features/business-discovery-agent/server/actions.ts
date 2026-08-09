@@ -100,6 +100,32 @@ export async function updateBusinessNameDraft(sessionId: string, name: string): 
   await supabaseAdmin.from("discovery_sessions").update({ business_name_draft: name }).eq("id", sessionId);
 }
 
+// El agente llama a esto (vía el tool close_discovery_session) solo después
+// de resumir y que el dueño del negocio confirme explícitamente que ya está
+// todo — ver system-prompt.ts § CLOSING_GUIDE.
+export async function closeDiscoverySession(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await supabaseAdmin
+    .from("discovery_sessions")
+    .update({ status: "submitted", submitted_at: new Date().toISOString() })
+    .eq("id", sessionId);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+// Permite reabrir: si el dueño del negocio vuelve a escribir en una sesión ya
+// cerrada (mismo link, cualquier momento), la regresa a 'in_progress' antes
+// de procesar el mensaje — no hay ninguna pantalla ni confirmación de por
+// medio, simplemente sigue funcionando. El .eq("status", "submitted") hace
+// que sea un no-op seguro si la sesión ya estaba abierta.
+export async function reopenDiscoverySessionIfSubmitted(sessionId: string): Promise<void> {
+  await supabaseAdmin
+    .from("discovery_sessions")
+    .update({ status: "in_progress" })
+    .eq("id", sessionId)
+    .eq("status", "submitted");
+}
+
 export async function setSessionCurrentSection(sessionId: string, sectionId: string): Promise<void> {
   await supabaseAdmin
     .from("discovery_sessions")

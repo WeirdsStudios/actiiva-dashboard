@@ -7,7 +7,7 @@ import { loadConversationHistory, persistTurns } from "../ai/conversation-store"
 import { fileToImageBlock, isVisionSupportedMimeType } from "../ai/image-handling";
 import { CONVERSATION_KICKOFF_MARKER } from "../ai/system-prompt";
 import { sectionIdForQuestion } from "../ai/tools";
-import { saveResponse, uploadDiscoveryAsset } from "./actions";
+import { reopenDiscoverySessionIfSubmitted, saveResponse, uploadDiscoveryAsset } from "./actions";
 
 export interface ChatTurnView {
   role: "user" | "assistant";
@@ -51,9 +51,17 @@ export async function sendChatMessage(sessionId: string, formData: FormData): Pr
 
   const { data: sessionRow } = await supabaseAdmin
     .from("discovery_sessions")
-    .select("business_name_draft")
+    .select("business_name_draft, status")
     .eq("id", sessionId)
     .maybeSingle();
+
+  // Reabrir automáticamente: si el dueño del negocio le escribe a una sesión
+  // que ya se había cerrado (close_discovery_session), no hay ninguna
+  // pantalla ni confirmación de por medio — simplemente vuelve a
+  // 'in_progress' y sigue la conversación como si nunca se hubiera cerrado.
+  if (sessionRow?.status === "submitted") {
+    await reopenDiscoverySessionIfSubmitted(sessionId);
+  }
 
   const contentBlocks: Anthropic.MessageParam["content"] = [];
 
