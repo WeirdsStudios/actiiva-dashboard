@@ -1,6 +1,7 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { generateDiscoveryExports } from "../export/build-export";
 import type { AnswersMap, ResponseStatus } from "../engine/question-pack.types";
 
 interface DiscoverySessionRow {
@@ -104,12 +105,35 @@ export async function updateBusinessNameDraft(sessionId: string, name: string): 
 // de resumir y que el dueño del negocio confirme explícitamente que ya está
 // todo — ver system-prompt.ts § CLOSING_GUIDE.
 export async function closeDiscoverySession(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { data: current } = await supabaseAdmin
+    .from("discovery_sessions")
+    .select("submitted_at")
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  // submitted_at solo se pone la primera vez — es el ancla fija de la
+  // ventana de 20 días para ajustes (ver export/build-export.ts). Si el
+  // negocio reabre y vuelve a cerrar después de corregir algo, la fecha no
+  // se mueve.
+  const submittedAt = current?.submitted_at ?? new Date().toISOString();
+
   const { error } = await supabaseAdmin
     .from("discovery_sessions")
-    .update({ status: "submitted", submitted_at: new Date().toISOString() })
+    .update({ status: "submitted", submitted_at: submittedAt })
     .eq("id", sessionId);
 
   if (error) return { ok: false, error: error.message };
+
+  try {
+    // Se regenera completo en cada cierre (incluye recierres tras una
+    // corrección) — no bloquea el cierre de la conversación con el usuario
+    // si falla: ya se guardó el status, la exportación se puede regenerar
+    // después.
+    await generateDiscoveryExports(sessionId, submittedAt);
+  } catch (exportError) {
+    console.error("No se pudo generar la exportación de discovery:", exportError);
+  }
+
   return { ok: true };
 }
 
