@@ -12,6 +12,12 @@ interface DiscoverySessionRow {
   pack_version: string;
   status: string;
   current_section_id: string | null;
+  // Usados por session-lock.ts para decidir si el chat sigue accesible tras
+  // la ventana de 20 días — ver page.tsx, que llama a computeSessionLockState
+  // con estos tres campos.
+  submitted_at: string | null;
+  reopen_requested_at: string | null;
+  reopen_authorized_until: string | null;
 }
 
 export type SessionLookupResult =
@@ -22,7 +28,9 @@ export type SessionLookupResult =
 export async function getSessionByAccessToken(accessToken: string): Promise<SessionLookupResult> {
   const { data: session, error } = await supabaseAdmin
     .from("discovery_sessions")
-    .select("id, access_token, token_expires_at, pack_id, pack_version, status, current_section_id")
+    .select(
+      "id, access_token, token_expires_at, pack_id, pack_version, status, current_section_id, submitted_at, reopen_requested_at, reopen_authorized_until",
+    )
     .eq("access_token", accessToken)
     .maybeSingle();
 
@@ -148,6 +156,22 @@ export async function reopenDiscoverySessionIfSubmitted(sessionId: string): Prom
     .update({ status: "in_progress" })
     .eq("id", sessionId)
     .eq("status", "submitted");
+}
+
+// El botón "Solicitar reapertura" de DiscoverySessionLockedScreen.tsx llama
+// a esto (vía server/chat-actions.ts) cuando ya pasó la ventana de 20 días.
+// No desbloquea nada por sí solo — solo registra la solicitud para que el
+// dueño del proyecto la vea (scripts/list-reopen-requests.ts) y decida si
+// autoriza (scripts/authorize-reopen.ts, que es lo único que en verdad
+// desbloquea, escribiendo reopen_authorized_until).
+export async function requestSessionReopen(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await supabaseAdmin
+    .from("discovery_sessions")
+    .update({ reopen_requested_at: new Date().toISOString() })
+    .eq("id", sessionId);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 export async function setSessionCurrentSection(sessionId: string, sectionId: string): Promise<void> {

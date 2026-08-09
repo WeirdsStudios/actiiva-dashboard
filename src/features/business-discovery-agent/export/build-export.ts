@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { questionPackActiiva } from "../packs/actiiva";
 import { isQuestionVisible } from "../engine/session-runtime";
+import { ADJUSTMENT_WINDOW_DAYS } from "../server/session-lock";
 import type { AnswersMap, ResponseStatus } from "../engine/question-pack.types";
 
 // El negocio puede reabrir su sesión y corregir datos después de "terminar"
@@ -13,10 +14,10 @@ import type { AnswersMap, ResponseStatus } from "../engine/question-pack.types";
 //
 // Ventana de 20 días: el negocio tiene 20 días desde su PRIMER cierre para
 // seguir ajustando antes de que el proceso de construcción tome los datos
-// como definitivos. Por eso closeDiscoverySession solo pone submitted_at la
-// primera vez — es el ancla fija de esa ventana, no se mueve aunque el
-// negocio reabra y vuelva a cerrar después.
-const ADJUSTMENT_WINDOW_DAYS = 20;
+// como definitivos (después de eso, server/session-lock.ts bloquea el chat).
+// Por eso closeDiscoverySession solo pone submitted_at la primera vez — es
+// el ancla fija de esa ventana, no se mueve aunque el negocio reabra y
+// vuelva a cerrar después.
 
 // question_id -> dataTarget ("documento.campo"), tomado del pack real — una
 // sola fuente de verdad, igual que build-topic-map.ts. Si se agrega una

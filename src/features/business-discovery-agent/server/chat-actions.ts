@@ -7,7 +7,8 @@ import { loadConversationHistory, persistTurns } from "../ai/conversation-store"
 import { fileToImageBlock, isVisionSupportedMimeType } from "../ai/image-handling";
 import { CONVERSATION_KICKOFF_MARKER } from "../ai/system-prompt";
 import { sectionIdForQuestion } from "../ai/tools";
-import { reopenDiscoverySessionIfSubmitted, saveResponse, uploadDiscoveryAsset } from "./actions";
+import { computeSessionLockState } from "./session-lock";
+import { reopenDiscoverySessionIfSubmitted, requestSessionReopen, saveResponse, uploadDiscoveryAsset } from "./actions";
 
 export interface ChatTurnView {
   role: "user" | "assistant";
@@ -51,15 +52,29 @@ export async function sendChatMessage(sessionId: string, formData: FormData): Pr
 
   const { data: sessionRow } = await supabaseAdmin
     .from("discovery_sessions")
-    .select("business_name_draft, status")
+    .select("business_name_draft, status, submitted_at, reopen_requested_at, reopen_authorized_until")
     .eq("id", sessionId)
     .maybeSingle();
 
+  if (!sessionRow) return { ok: false, error: "Sesión no encontrada." };
+
+  // Defensa en profundidad: page.tsx ya no debería dejar llegar aquí a una
+  // sesión bloqueada (renderiza DiscoverySessionLockedScreen en su lugar),
+  // pero si una pestaña quedó abierta desde antes de que se cumplieran los
+  // 20 días, el server action también lo rechaza.
+  if (computeSessionLockState(sessionRow).locked) {
+    return {
+      ok: false,
+      error: "Esta sesión ya pasó su ventana de ajuste de 20 días. Solicita la reapertura desde el link original.",
+    };
+  }
+
   // Reabrir automáticamente: si el dueño del negocio le escribe a una sesión
-  // que ya se había cerrado (close_discovery_session), no hay ninguna
-  // pantalla ni confirmación de por medio — simplemente vuelve a
-  // 'in_progress' y sigue la conversación como si nunca se hubiera cerrado.
-  if (sessionRow?.status === "submitted") {
+  // que ya se había cerrado (close_discovery_session) pero SIGUE dentro de
+  // su ventana de 20 días (o fue autorizada), no hay ninguna pantalla ni
+  // confirmación de por medio — simplemente vuelve a 'in_progress' y sigue
+  // la conversación como si nunca se hubiera cerrado.
+  if (sessionRow.status === "submitted") {
     await reopenDiscoverySessionIfSubmitted(sessionId);
   }
 
@@ -139,4 +154,9 @@ export async function startConversation(sessionId: string): Promise<SendResult> 
   const formData = new FormData();
   formData.set("message", CONVERSATION_KICKOFF_MARKER);
   return sendChatMessage(sessionId, formData);
+}
+
+// Llamado por el botón "Solicitar reapertura" de DiscoverySessionLockedScreen.
+export async function requestReopen(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  return requestSessionReopen(sessionId);
 }
