@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { UsersSignature } from "./UsersSignature";
 
 interface DiscoveryWelcomeScreenProps {
@@ -34,9 +35,11 @@ export function DiscoveryWelcomeScreen({ onStart }: DiscoveryWelcomeScreenProps)
             real adentro sin depender de ese cálculo de intrínseco. Mismo
             riesgo no aplica a los demás <img> de marca del proyecto porque
             todos usan altura fija (h-7, h-2.5) en vez de ancho porcentual. */}
-        <img
+        <Image
           src="/brand/actiiva-lockup-primary.svg"
           alt="ACTIIVA — Gestión de negocios fitness"
+          width={339}
+          height={61}
           className="mx-auto h-20 w-full object-contain"
         />
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import Image from "next/image";
 import type { QuestionDefinition } from "../engine/question-pack.types";
 import { type ChatTurnView, sendChatMessage, startConversation } from "../server/chat-actions";
 import { DiscoverySessionPausedScreen } from "./DiscoverySessionPausedScreen";
@@ -10,6 +11,7 @@ import { UsersSignature } from "./UsersSignature";
 
 interface DiscoveryChatScreenProps {
   sessionId: string;
+  accessToken: string;
   businessNameDraft: string | null;
   fileUploadQuestions: QuestionDefinition[];
   initialHistory: ChatTurnView[];
@@ -17,6 +19,7 @@ interface DiscoveryChatScreenProps {
 
 export function DiscoveryChatScreen({
   sessionId,
+  accessToken,
   businessNameDraft,
   fileUploadQuestions,
   initialHistory,
@@ -41,7 +44,7 @@ export function DiscoveryChatScreen({
     if (kickoffSentRef.current) return;
     kickoffSentRef.current = true;
     startTransition(async () => {
-      const result = await startConversation(sessionId);
+      const result = await startConversation(sessionId, accessToken);
       if (result.ok) setMessages((prev) => [...prev, { role: "assistant", text: result.reply }]);
       else setError(result.error);
     });
@@ -64,7 +67,7 @@ export function DiscoveryChatScreen({
     setPendingFile(null);
 
     startTransition(async () => {
-      const result = await sendChatMessage(sessionId, formData);
+      const result = await sendChatMessage(sessionId, accessToken, formData);
       if (result.ok) {
         setMessages((prev) => [...prev, { role: "assistant", text: result.reply, savedCount: result.savedCount }]);
       } else {
@@ -85,7 +88,7 @@ export function DiscoveryChatScreen({
     <div className="mx-auto flex h-screen max-w-md flex-col bg-canvas">
       <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
-          <img src="/brand/actiiva-symbol-primary.svg" alt="ACTIIVA" className="h-7 w-auto shrink-0" />
+          <Image src="/brand/actiiva-symbol-primary.svg" alt="ACTIIVA" width={52} height={67} className="h-7 w-auto shrink-0" />
           <div className="flex min-w-0 flex-col leading-tight">
             <span className="truncate text-sm font-medium text-foreground">Configuración de tu negocio</span>
             {businessNameDraft && <span className="truncate text-xs text-muted">{businessNameDraft}</span>}
@@ -104,7 +107,7 @@ export function DiscoveryChatScreen({
         {messages.map((m, i) =>
           m.role === "assistant" ? (
             <div key={i} className="flex max-w-[85%] items-end gap-2 self-start">
-              <img src="/brand/actiiva-app-icon-light.svg" alt="" className="h-7 w-7 shrink-0 rounded-[8px]" />
+              <Image src="/brand/actiiva-app-icon-light.svg" alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded-[8px]" />
               <div className="flex flex-col gap-1">
                 <div className="rounded-lg bg-surface px-4 py-2 text-sm whitespace-pre-wrap text-foreground">
                   {m.text}

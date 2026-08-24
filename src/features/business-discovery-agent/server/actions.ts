@@ -1,8 +1,14 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { generateDiscoveryExports } from "../export/build-export";
 import type { AnswersMap, ResponseStatus } from "../engine/question-pack.types";
+import { questionPackActiiva } from "../packs/actiiva";
+import { accessErrorMessage, authorizeDiscoverySession } from "./access-control";
+import { ADJUSTMENT_WINDOW_DAYS, computeSessionLockState } from "./session-lock";
+import { validateDiscoveryFile, validateDiscoveryResponse } from "./response-validation";
+import { validateImageSignature } from "./content-safety";
 
 interface DiscoverySessionRow {
   id: string;
@@ -22,7 +28,7 @@ interface DiscoverySessionRow {
 
 export type SessionLookupResult =
   | { state: "not_found" }
-  | { state: "expired" }
+  | { state: "expired"; session: DiscoverySessionRow }
   | { state: "ok"; session: DiscoverySessionRow; answers: AnswersMap };
 
 export async function getSessionByAccessToken(accessToken: string): Promise<SessionLookupResult> {
@@ -35,7 +41,7 @@ export async function getSessionByAccessToken(accessToken: string): Promise<Sess
     .maybeSingle();
 
   if (error || !session) return { state: "not_found" };
-  if (new Date(session.token_expires_at) < new Date()) return { state: "expired" };
+  if (new Date(session.token_expires_at) < new Date()) return { state: "expired", session };
 
   const { data: responses } = await supabaseAdmin
     .from("discovery_responses")
@@ -52,8 +58,8 @@ export async function getSessionByAccessToken(accessToken: string): Promise<Sess
 
 export async function saveResponse(params: {
   sessionId: string;
+  accessToken: string;
   questionId: string;
-  sectionId: string;
   value: unknown;
   status: ResponseStatus;
   // Opcionales, agregados para el agente de IA (ver
@@ -66,15 +72,31 @@ export async function saveResponse(params: {
   confidence?: number;
   originRef?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { sessionId, questionId, sectionId, value, status, source, confidence, originRef } = params;
+  const { sessionId, accessToken, questionId, value, status, source, confidence, originRef } = params;
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return { ok: false, error: accessErrorMessage(access.reason) };
+
+  const allowedSources = new Set(["user_input", "ai_extracted", "inferred", "default"]);
+  if (source !== undefined && !allowedSources.has(source)) {
+    return { ok: false, error: "La procedencia de la respuesta no es válida." };
+  }
+  if (confidence !== undefined && (!Number.isFinite(confidence) || confidence < 0 || confidence > 1)) {
+    return { ok: false, error: "La confianza debe estar entre 0 y 1." };
+  }
+  if (originRef !== undefined && originRef.length > 500) {
+    return { ok: false, error: "La referencia de origen es demasiado larga." };
+  }
+
+  const validated = validateDiscoveryResponse({ questionId, value, status });
+  if (!validated.ok) return validated;
 
   const { error } = await supabaseAdmin.from("discovery_responses").upsert(
     {
       session_id: sessionId,
       question_id: questionId,
-      section_id: sectionId,
-      value: value ?? null,
-      status,
+      section_id: validated.data.question.sectionId,
+      value: validated.data.value,
+      status: validated.data.status,
       ...(source !== undefined ? { source } : {}),
       ...(confidence !== undefined ? { confidence } : {}),
       ...(originRef !== undefined ? { origin_ref: originRef } : {}),
@@ -88,8 +110,18 @@ export async function saveResponse(params: {
 
 export async function confirmDraftResponses(
   sessionId: string,
+  accessToken: string,
   questionIds: string[],
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return { ok: false, error: accessErrorMessage(access.reason) };
+
+  const knownIds = new Set(questionPackActiiva.questions.map((question) => question.id));
+  if (questionIds.length > questionPackActiiva.questions.length || questionIds.some((id) => !knownIds.has(id))) {
+    return { ok: false, error: "Una o más respuestas no pertenecen al pack activo." };
+  }
+  if (questionIds.length === 0) return { ok: true };
+
   const { error } = await supabaseAdmin
     .from("discovery_responses")
     .update({ status: "owner_confirmed" satisfies ResponseStatus })
@@ -105,14 +137,24 @@ export async function confirmDraftResponses(
 // panel admin) sin exigirle a quien crea el link que teclee el nombre del
 // negocio de antemano — el agente ya lo pregunta como su primer tema real
 // (biz.name); en cuanto lo guarda, ai/agent-loop.ts llama a esta función.
-export async function updateBusinessNameDraft(sessionId: string, name: string): Promise<void> {
-  await supabaseAdmin.from("discovery_sessions").update({ business_name_draft: name }).eq("id", sessionId);
+export async function updateBusinessNameDraft(sessionId: string, accessToken: string, name: string): Promise<void> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return;
+  const normalizedName = name.trim().slice(0, 120);
+  if (!normalizedName) return;
+  await supabaseAdmin.from("discovery_sessions").update({ business_name_draft: normalizedName }).eq("id", sessionId);
 }
 
 // El agente llama a esto (vía el tool close_discovery_session) solo después
 // de resumir y que el dueño del negocio confirme explícitamente que ya está
 // todo — ver system-prompt.ts § CLOSING_GUIDE.
-export async function closeDiscoverySession(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function closeDiscoverySession(
+  sessionId: string,
+  accessToken: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return { ok: false, error: accessErrorMessage(access.reason) };
+
   const { data: current } = await supabaseAdmin
     .from("discovery_sessions")
     .select("submitted_at")
@@ -124,10 +166,17 @@ export async function closeDiscoverySession(sessionId: string): Promise<{ ok: tr
   // negocio reabre y vuelve a cerrar después de corregir algo, la fecha no
   // se mueve.
   const submittedAt = current?.submitted_at ?? new Date().toISOString();
+  const adjustmentDeadline = new Date(
+    new Date(submittedAt).getTime() + ADJUSTMENT_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  const tokenExpiresAt =
+    new Date(access.session.token_expires_at).getTime() > new Date(adjustmentDeadline).getTime()
+      ? access.session.token_expires_at
+      : adjustmentDeadline;
 
   const { error } = await supabaseAdmin
     .from("discovery_sessions")
-    .update({ status: "submitted", submitted_at: submittedAt })
+    .update({ status: "submitted", submitted_at: submittedAt, token_expires_at: tokenExpiresAt })
     .eq("id", sessionId);
 
   if (error) return { ok: false, error: error.message };
@@ -150,7 +199,9 @@ export async function closeDiscoverySession(sessionId: string): Promise<{ ok: tr
 // de procesar el mensaje — no hay ninguna pantalla ni confirmación de por
 // medio, simplemente sigue funcionando. El .eq("status", "submitted") hace
 // que sea un no-op seguro si la sesión ya estaba abierta.
-export async function reopenDiscoverySessionIfSubmitted(sessionId: string): Promise<void> {
+export async function reopenDiscoverySessionIfSubmitted(sessionId: string, accessToken: string): Promise<void> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return;
   await supabaseAdmin
     .from("discovery_sessions")
     .update({ status: "in_progress" })
@@ -164,7 +215,19 @@ export async function reopenDiscoverySessionIfSubmitted(sessionId: string): Prom
 // dueño del proyecto la vea (scripts/list-reopen-requests.ts) y decida si
 // autoriza (scripts/authorize-reopen.ts, que es lo único que en verdad
 // desbloquea, escribiendo reopen_authorized_until).
-export async function requestSessionReopen(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function requestSessionReopen(
+  sessionId: string,
+  accessToken: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken, { allowExpired: true, allowLocked: true });
+  if (!access.ok) return { ok: false, error: accessErrorMessage(access.reason) };
+  if (access.session.status === "approved") {
+    return { ok: false, error: "Esta sesión ya fue aprobada y no admite reapertura desde el enlace público." };
+  }
+  if (!computeSessionLockState(access.session).locked) {
+    return { ok: false, error: "Esta sesión todavía no requiere una reapertura." };
+  }
+
   const { error } = await supabaseAdmin
     .from("discovery_sessions")
     .update({ reopen_requested_at: new Date().toISOString() })
@@ -174,7 +237,10 @@ export async function requestSessionReopen(sessionId: string): Promise<{ ok: tru
   return { ok: true };
 }
 
-export async function setSessionCurrentSection(sessionId: string, sectionId: string): Promise<void> {
+export async function setSessionCurrentSection(sessionId: string, accessToken: string, sectionId: string): Promise<void> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return;
+  if (!questionPackActiiva.sections.some((section) => section.id === sectionId)) return;
   await supabaseAdmin
     .from("discovery_sessions")
     .update({ current_section_id: sectionId })
@@ -183,13 +249,32 @@ export async function setSessionCurrentSection(sessionId: string, sectionId: str
 
 export async function uploadDiscoveryAsset(
   sessionId: string,
+  accessToken: string,
   questionId: string,
   formData: FormData,
 ): Promise<{ ok: true; asset: { filename: string; path: string } } | { ok: false; error: string }> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return { ok: false, error: accessErrorMessage(access.reason) };
+
   const file = formData.get("file");
   if (!(file instanceof File)) return { ok: false, error: "No se recibió el archivo" };
+  const validation = validateDiscoveryFile(questionId, file);
+  if (!validation.ok) return validation;
+  const signatureValidation = await validateImageSignature(file);
+  if (!signatureValidation.ok) return signatureValidation;
 
-  const path = `${sessionId}/${questionId}/${Date.now()}-${file.name}`;
+  const { count, error: countError } = await supabaseAdmin
+    .from("discovery_assets")
+    .select("id", { count: "exact", head: true })
+    .eq("session_id", sessionId)
+    .eq("question_id", questionId);
+  if (countError) return { ok: false, error: "No se pudo validar el límite de archivos." };
+  if ((count ?? 0) >= validation.question.fileConstraint!.maxFiles) {
+    return { ok: false, error: `Ya alcanzaste el máximo de ${validation.question.fileConstraint!.maxFiles} archivos.` };
+  }
+
+  const safeFilename = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-120) || "archivo";
+  const path = `${sessionId}/${questionId}/${randomUUID()}-${safeFilename}`;
 
   const { error: uploadError } = await supabaseAdmin.storage
     .from("discovery-assets")
@@ -204,20 +289,10 @@ export async function uploadDiscoveryAsset(
     mime_type: file.type,
     size_bytes: file.size,
   });
-  if (insertError) return { ok: false, error: insertError.message };
+  if (insertError) {
+    await supabaseAdmin.storage.from("discovery-assets").remove([path]);
+    return { ok: false, error: insertError.message };
+  }
 
   return { ok: true, asset: { filename: file.name, path } };
-}
-
-// Fase 2 no incluye el panel interno para crear sesiones (eso es Fase 5).
-// Esta función existe solo para poder probar el flujo de punta a punta mientras tanto.
-export async function createDiscoverySession(packId: string, packVersion: string): Promise<string> {
-  const { data, error } = await supabaseAdmin
-    .from("discovery_sessions")
-    .insert({ pack_id: packId, pack_version: packVersion })
-    .select("access_token")
-    .single();
-
-  if (error || !data) throw new Error(error?.message ?? "No se pudo crear la sesión");
-  return data.access_token as string;
 }

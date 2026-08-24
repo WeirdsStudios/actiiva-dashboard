@@ -36,6 +36,7 @@ export interface AgentTurnResult {
 
 async function executeTool(
   sessionId: string,
+  accessToken: string,
   block: Anthropic.ToolUseBlock,
 ): Promise<{ content: string; isError: boolean; savedQuestionId?: string }> {
   if (block.name === SAVE_DISCOVERY_RESPONSE_TOOL.name) {
@@ -47,8 +48,8 @@ async function executeTool(
 
     const result = await saveResponse({
       sessionId,
+      accessToken,
       questionId: input.question_id,
-      sectionId,
       value: input.value,
       status: input.status,
       source: input.source,
@@ -59,7 +60,7 @@ async function executeTool(
     if (!result.ok) return { content: `No se pudo guardar: ${result.error}`, isError: true };
 
     if (input.question_id === BUSINESS_NAME_QUESTION_ID && typeof input.value === "string" && input.value.trim()) {
-      await updateBusinessNameDraft(sessionId, input.value.trim());
+      await updateBusinessNameDraft(sessionId, accessToken, input.value.trim());
     }
 
     return { content: "guardado", isError: false, savedQuestionId: input.question_id };
@@ -67,13 +68,13 @@ async function executeTool(
 
   if (block.name === CONFIRM_SECTION_RESPONSES_TOOL.name) {
     const input = block.input as ConfirmSectionResponsesInput;
-    const result = await confirmDraftResponses(sessionId, input.question_ids);
+    const result = await confirmDraftResponses(sessionId, accessToken, input.question_ids);
     if (!result.ok) return { content: `No se pudo confirmar: ${result.error}`, isError: true };
     return { content: "confirmado", isError: false };
   }
 
   if (block.name === CLOSE_DISCOVERY_SESSION_TOOL.name) {
-    const result = await closeDiscoverySession(sessionId);
+    const result = await closeDiscoverySession(sessionId, accessToken);
     if (!result.ok) return { content: `No se pudo cerrar la sesión: ${result.error}`, isError: true };
     return { content: "sesión cerrada", isError: false };
   }
@@ -91,11 +92,12 @@ function extractText(content: Anthropic.ContentBlock[]): string {
 
 export async function runAgentTurn(params: {
   sessionId: string;
+  accessToken: string;
   businessNameDraft: string | null;
   history: Anthropic.MessageParam[];
   newUserMessage: Anthropic.MessageParam;
 }): Promise<AgentTurnResult> {
-  const { sessionId, businessNameDraft, history, newUserMessage } = params;
+  const { sessionId, accessToken, businessNameDraft, history, newUserMessage } = params;
 
   const messages: Anthropic.MessageParam[] = [...history, newUserMessage];
   const newMessages: Anthropic.MessageParam[] = [newUserMessage];
@@ -130,7 +132,7 @@ export async function runAgentTurn(params: {
 
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
     for (const block of toolUseBlocks) {
-      const result = await executeTool(sessionId, block);
+      const result = await executeTool(sessionId, accessToken, block);
       if (result.savedQuestionId) savedQuestionIds.push(result.savedQuestionId);
       toolResults.push({
         type: "tool_result",

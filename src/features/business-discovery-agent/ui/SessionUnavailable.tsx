@@ -1,11 +1,12 @@
 interface SessionUnavailableProps {
-  reason: "not_found" | "expired";
+  reason: "not_found" | "expired" | "approved";
 }
 
 export function SessionUnavailable({ reason }: SessionUnavailableProps) {
-  const message =
-    reason === "expired"
-      ? "Este link ya expiró. Pide que te compartan uno nuevo."
+  const message = reason === "expired"
+    ? "Este link ya expiró. Pide que te compartan uno nuevo."
+    : reason === "approved"
+      ? "La información de este negocio ya fue aprobada. Si necesitas hacer un cambio, contacta a ACTIIVA."
       : "Este link no es válido.";
 
   return (

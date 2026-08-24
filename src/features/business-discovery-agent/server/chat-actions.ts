@@ -6,9 +6,10 @@ import { runAgentTurn } from "../ai/agent-loop";
 import { loadConversationHistory, persistTurns } from "../ai/conversation-store";
 import { fileToImageBlock, isVisionSupportedMimeType } from "../ai/image-handling";
 import { CONVERSATION_KICKOFF_MARKER } from "../ai/system-prompt";
-import { sectionIdForQuestion } from "../ai/tools";
 import { computeSessionLockState } from "./session-lock";
 import { reopenDiscoverySessionIfSubmitted, requestSessionReopen, saveResponse, uploadDiscoveryAsset } from "./actions";
+import { authorizeDiscoverySession } from "./access-control";
+import { redactSensitiveFinancialNumbers } from "./content-safety";
 
 export interface ChatTurnView {
   role: "user" | "assistant";
@@ -28,7 +29,9 @@ function contentToDisplayText(content: Anthropic.MessageParam["content"]): strin
 // Turnos de solo tool_use/tool_result no tienen texto para mostrar, y el
 // mensaje de arranque (CONVERSATION_KICKOFF_MARKER) es una señal técnica, no
 // contenido real del usuario — ambos se ocultan de la vista de chat.
-export async function getChatHistory(sessionId: string): Promise<ChatTurnView[]> {
+export async function getChatHistory(sessionId: string, accessToken: string): Promise<ChatTurnView[]> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return [];
   const history = await loadConversationHistory(sessionId);
   return history
     // El schema de discovery_conversation_turns solo permite role
@@ -41,7 +44,7 @@ export async function getChatHistory(sessionId: string): Promise<ChatTurnView[]>
 
 type SendResult = { ok: true; reply: string; savedCount: number } | { ok: false; error: string };
 
-export async function sendChatMessage(sessionId: string, formData: FormData): Promise<SendResult> {
+export async function sendChatMessage(sessionId: string, accessToken: string, formData: FormData): Promise<SendResult> {
   const message = (formData.get("message") as string | null)?.trim() ?? "";
   const file = formData.get("file");
   const fileQuestionId = formData.get("fileQuestionId") as string | null;
@@ -49,99 +52,113 @@ export async function sendChatMessage(sessionId: string, formData: FormData): Pr
   if (!message && !(file instanceof File)) {
     return { ok: false, error: "Escribe un mensaje o adjunta un archivo." };
   }
+  if (message.length > 10_000) {
+    return { ok: false, error: "El mensaje es demasiado largo. Envíalo en partes más pequeñas." };
+  }
 
-  const { data: sessionRow } = await supabaseAdmin
-    .from("discovery_sessions")
-    .select("business_name_draft, status, submitted_at, reopen_requested_at, reopen_authorized_until")
-    .eq("id", sessionId)
-    .maybeSingle();
+  const { data: claimResult, error: claimError } = await supabaseAdmin.rpc("claim_discovery_agent_turn", {
+    p_session_id: sessionId,
+    p_access_token: accessToken,
+  });
 
-  if (!sessionRow) return { ok: false, error: "Sesión no encontrada." };
-
-  // Defensa en profundidad: page.tsx ya no debería dejar llegar aquí a una
-  // sesión bloqueada (renderiza DiscoverySessionLockedScreen en su lugar),
-  // pero si una pestaña quedó abierta desde antes de que se cumplieran los
-  // 20 días, el server action también lo rechaza.
-  if (computeSessionLockState(sessionRow).locked) {
-    return {
-      ok: false,
-      error: "Esta sesión ya pasó su ventana de ajuste de 20 días. Solicita la reapertura desde el link original.",
+  if (claimError) return { ok: false, error: "No se pudo iniciar el turno. Intenta de nuevo." };
+  if (claimResult !== "claimed") {
+    const claimMessages: Record<string, string> = {
+      unauthorized: "No se pudo validar el acceso a esta sesión.",
+      expired: "Este enlace ya expiró. Solicita uno nuevo a ACTIIVA.",
+      locked: "Esta sesión ya fue aprobada y no admite más cambios.",
+      busy: "Ya estamos procesando otro mensaje. Espera un momento.",
+      rate_limited: "Espera un par de segundos antes de enviar otro mensaje.",
+      limit_reached: "Esta conversación llegó a su límite. Contacta a ACTIIVA para continuar.",
     };
+    return { ok: false, error: claimMessages[String(claimResult)] ?? "No se pudo iniciar el turno." };
   }
 
-  // Reabrir automáticamente: si el dueño del negocio le escribe a una sesión
-  // que ya se había cerrado (close_discovery_session) pero SIGUE dentro de
-  // su ventana de 20 días (o fue autorizada), no hay ninguna pantalla ni
-  // confirmación de por medio — simplemente vuelve a 'in_progress' y sigue
-  // la conversación como si nunca se hubiera cerrado.
-  if (sessionRow.status === "submitted") {
-    await reopenDiscoverySessionIfSubmitted(sessionId);
-  }
+  try {
+    const { data: sessionRow } = await supabaseAdmin
+      .from("discovery_sessions")
+      .select("business_name_draft, status, submitted_at, reopen_requested_at, reopen_authorized_until")
+      .eq("id", sessionId)
+      .eq("access_token", accessToken)
+      .maybeSingle();
 
-  const contentBlocks: Anthropic.MessageParam["content"] = [];
+    if (!sessionRow) return { ok: false, error: "Sesión no encontrada." };
 
-  if (file instanceof File) {
-    if (!fileQuestionId) return { ok: false, error: "Falta indicar para qué es el archivo." };
+    if (sessionRow.status === "approved" || computeSessionLockState(sessionRow).locked) {
+      return {
+        ok: false,
+        error: "Esta sesión ya pasó su ventana de ajuste de 20 días. Solicita la reapertura desde el link original.",
+      };
+    }
 
-    // uploadDiscoveryAsset ya existe de Fase 2, sin cambios: sube a Supabase
-    // Storage y registra la fila en discovery_assets igual que en el flujo
-    // determinista.
-    const uploadResult = await uploadDiscoveryAsset(sessionId, fileQuestionId, formData);
-    if (!uploadResult.ok) return { ok: false, error: uploadResult.error };
+    if (sessionRow.status === "submitted") {
+      await reopenDiscoverySessionIfSubmitted(sessionId, accessToken);
+    }
 
-    // El servidor registra la respuesta de la pregunta file_upload por su
-    // cuenta, sin depender de que el modelo lo recuerde — necesario para que
-    // computeSectionProgress (que lee discovery_responses, no
-    // discovery_assets) refleje el avance. Ver AI-AGENT-DESIGN.md §6.1 paso 5.
-    const sectionId = sectionIdForQuestion(fileQuestionId);
-    if (sectionId) {
-      await saveResponse({
+    const contentBlocks: Anthropic.MessageParam["content"] = [];
+
+    if (file instanceof File) {
+      if (!fileQuestionId) return { ok: false, error: "Falta indicar para qué es el archivo." };
+
+      const uploadResult = await uploadDiscoveryAsset(sessionId, accessToken, fileQuestionId, formData);
+      if (!uploadResult.ok) return { ok: false, error: uploadResult.error };
+
+      const saveFileResponse = await saveResponse({
         sessionId,
+        accessToken,
         questionId: fileQuestionId,
-        sectionId,
         value: [uploadResult.asset.filename],
         status: "draft",
         source: "user_input",
       });
+      if (!saveFileResponse.ok) return saveFileResponse;
+
+      if (isVisionSupportedMimeType(file.type)) {
+        const imageBlock = await fileToImageBlock(file);
+        if (imageBlock) contentBlocks.push(imageBlock);
+        contentBlocks.push({ type: "text", text: `[archivo subido: ${file.name}, para "${fileQuestionId}"]` });
+      } else {
+        contentBlocks.push({
+          type: "text",
+          text: `[el usuario subió un archivo que no se puede previsualizar (${file.name}), para "${fileQuestionId}". No intentes describir su contenido — sigue la instrucción de respaldo para este caso.]`,
+        });
+      }
     }
 
-    if (isVisionSupportedMimeType(file.type)) {
-      const imageBlock = await fileToImageBlock(file);
-      if (imageBlock) contentBlocks.push(imageBlock);
-      contentBlocks.push({ type: "text", text: `[archivo subido: ${file.name}, para "${fileQuestionId}"]` });
-    } else {
-      contentBlocks.push({
-        type: "text",
-        text: `[el usuario subió un archivo que no se puede previsualizar (${file.name}), para "${fileQuestionId}". No intentes describir su contenido — sigue la instrucción de respaldo para este caso.]`,
-      });
-    }
+    if (message) contentBlocks.push({ type: "text", text: redactSensitiveFinancialNumbers(message) });
+
+    const newUserMessage: Anthropic.MessageParam = { role: "user", content: contentBlocks };
+    const history = await loadConversationHistory(sessionId);
+
+    const { assistantText, newMessages, savedQuestionIds } = await runAgentTurn({
+      sessionId,
+      accessToken,
+      businessNameDraft: sessionRow.business_name_draft ?? null,
+      history,
+      newUserMessage,
+    });
+
+    await persistTurns(sessionId, newMessages);
+
+    return {
+      ok: true,
+      reply: assistantText || "Perdón, no capté eso — ¿puedes intentarlo de otra forma?",
+      savedCount: savedQuestionIds.length,
+    };
+  } catch (error) {
+    console.error("Falló un turno del agente de discovery:", error);
+    return { ok: false, error: "No se pudo procesar el mensaje. Tu sesión sigue guardada; intenta de nuevo." };
+  } finally {
+    await supabaseAdmin.rpc("release_discovery_agent_turn", { p_session_id: sessionId });
   }
-
-  if (message) contentBlocks.push({ type: "text", text: message });
-
-  const newUserMessage: Anthropic.MessageParam = { role: "user", content: contentBlocks };
-  const history = await loadConversationHistory(sessionId);
-
-  const { assistantText, newMessages, savedQuestionIds } = await runAgentTurn({
-    sessionId,
-    businessNameDraft: sessionRow?.business_name_draft ?? null,
-    history,
-    newUserMessage,
-  });
-
-  await persistTurns(sessionId, newMessages);
-
-  return {
-    ok: true,
-    reply: assistantText || "Perdón, no capté eso — ¿puedes intentarlo de otra forma?",
-    savedCount: savedQuestionIds.length,
-  };
 }
 
 // Para el header del chat y la pantalla de bienvenida — getSessionByAccessToken
 // (server/actions.ts) no selecciona esta columna, así que se consulta aparte
 // en vez de ampliar esa función para todos sus otros callers.
-export async function getBusinessNameDraft(sessionId: string): Promise<string | null> {
+export async function getBusinessNameDraft(sessionId: string, accessToken: string): Promise<string | null> {
+  const access = await authorizeDiscoverySession(sessionId, accessToken);
+  if (!access.ok) return null;
   const { data } = await supabaseAdmin
     .from("discovery_sessions")
     .select("business_name_draft")
@@ -150,13 +167,16 @@ export async function getBusinessNameDraft(sessionId: string): Promise<string | 
   return data?.business_name_draft ?? null;
 }
 
-export async function startConversation(sessionId: string): Promise<SendResult> {
+export async function startConversation(sessionId: string, accessToken: string): Promise<SendResult> {
   const formData = new FormData();
   formData.set("message", CONVERSATION_KICKOFF_MARKER);
-  return sendChatMessage(sessionId, formData);
+  return sendChatMessage(sessionId, accessToken, formData);
 }
 
 // Llamado por el botón "Solicitar reapertura" de DiscoverySessionLockedScreen.
-export async function requestReopen(sessionId: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  return requestSessionReopen(sessionId);
+export async function requestReopen(
+  sessionId: string,
+  accessToken: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  return requestSessionReopen(sessionId, accessToken);
 }

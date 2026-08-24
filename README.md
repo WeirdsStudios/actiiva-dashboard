@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ACTIIVA Dashboard
 
-## Getting Started
+Aplicación Next.js que contiene dos superficies:
 
-First, run the development server:
+- `/discovery/[accessToken]`: onboarding conversacional para el dueño del negocio.
+- `/admin/discovery`: centro interno de operaciones para crear y revisar sesiones.
+
+## Desarrollo local
+
+1. Copia las variables documentadas en `.env.example` a `.env.local`.
+2. Define `ADMIN_EMAILS` con los correos autorizados, separados por comas.
+3. Crea esas cuentas en **Supabase → Authentication → Users**. No existe registro público.
+4. Ejecuta las migraciones de `supabase/migrations`.
+5. Inicia la aplicación con `bun run dev`.
+
+Comandos de verificación:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun run test
+bun run lint
+bun run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Seguridad relevante
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Los enlaces públicos usan un token aleatorio distinto del ID de la sesión.
+- Todas las mutaciones validan `sessionId + accessToken` en el servidor.
+- RLS permanece cerrado para `anon` y `authenticated`; el backend usa service role.
+- El agente serializa los turnos, limita la frecuencia y tiene un máximo de 300 mensajes por sesión.
+- Los archivos se validan por pregunta, MIME, tamaño y cantidad antes de llegar a Storage.
+- El panel valida en cada lectura y escritura que la identidad de Supabase Auth esté en `ADMIN_EMAILS`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El detalle del baseline y las decisiones del primer vertical slice está en `docs/ARCHITECTURE.md`.

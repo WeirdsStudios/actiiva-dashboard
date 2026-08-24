@@ -14,10 +14,11 @@ interface DiscoverySectionScreenProps {
   pack: QuestionPack;
   sectionId: string;
   sessionId: string;
+  accessToken: string;
   initialAnswers: AnswersMap;
 }
 
-export function DiscoverySectionScreen({ pack, sectionId, sessionId, initialAnswers }: DiscoverySectionScreenProps) {
+export function DiscoverySectionScreen({ pack, sectionId, sessionId, accessToken, initialAnswers }: DiscoverySectionScreenProps) {
   const section = pack.sections.find((s) => s.id === sectionId);
   const [answers, setAnswers] = useState<AnswersMap>(initialAnswers);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -42,7 +43,8 @@ export function DiscoverySectionScreen({ pack, sectionId, sessionId, initialAnsw
   const currentQuestion = visibleQuestions[questionIndex];
 
   function persist(questionId: string, questionSectionId: string, value: unknown, status: ResponseStatus) {
-    saveResponse({ sessionId, questionId, sectionId: questionSectionId, value, status })
+    void questionSectionId;
+    saveResponse({ sessionId, accessToken, questionId, value, status })
       .then((result) => setSaveError(!result.ok))
       .catch(() => setSaveError(true));
   }
@@ -88,7 +90,7 @@ export function DiscoverySectionScreen({ pack, sectionId, sessionId, initialAnsw
     });
 
     if (draftIds.length > 0) {
-      const result = await confirmDraftResponses(sessionId, draftIds);
+      const result = await confirmDraftResponses(sessionId, accessToken, draftIds);
       setSaveError(!result.ok);
     }
   }
@@ -161,6 +163,7 @@ export function DiscoverySectionScreen({ pack, sectionId, sessionId, initialAnsw
         <QuestionRenderer
           question={currentQuestion}
           sessionId={sessionId}
+          accessToken={accessToken}
           value={currentAnswer?.value}
           onChange={(value) => setAnswer(currentQuestion, value, "draft")}
         />

@@ -13,11 +13,12 @@ import { FileUpload, type UploadedFileRef } from "./inputs/FileUpload";
 interface QuestionRendererProps {
   question: QuestionDefinition;
   sessionId: string;
+  accessToken: string;
   value: unknown;
   onChange: (value: unknown) => void;
 }
 
-export function QuestionRenderer({ question, sessionId, value, onChange }: QuestionRendererProps) {
+export function QuestionRenderer({ question, sessionId, accessToken, value, onChange }: QuestionRendererProps) {
   switch (question.type) {
     case "short_text":
       return <TextInput value={(value as string) ?? ""} onChange={onChange} />;
@@ -65,7 +66,7 @@ export function QuestionRenderer({ question, sessionId, value, onChange }: Quest
           onUpload={(file) => {
             const formData = new FormData();
             formData.append("file", file);
-            return uploadDiscoveryAsset(sessionId, question.id, formData);
+            return uploadDiscoveryAsset(sessionId, accessToken, question.id, formData);
           }}
         />
       );

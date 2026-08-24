@@ -17,9 +17,13 @@
   --color-signal: var(--color-signal);
   --color-signal-soft: var(--color-signal-soft);
   --color-success: var(--color-success);
+  --color-success-surface: var(--color-success-surface);
   --color-warning: var(--color-warning);
+  --color-warning-surface: var(--color-warning-surface);
   --color-danger: var(--color-danger);
+  --color-danger-surface: var(--color-danger-surface);
   --color-info: var(--color-info);
+  --color-info-surface: var(--color-info-surface);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --radius-sm: var(--radius-sm);

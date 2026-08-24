@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // Firma discreta de la marca paraguas. Geometría exacta copiada de
 // ~/Developer/user/usersmx_logo/SVG/isotipo_user_black.svg (sin recrear el
 // isotipo) — se referencia como <img>, no se recolorea, y se usa muy por
@@ -7,7 +9,7 @@
 export function UsersSignature() {
   return (
     <div className="flex items-center gap-1.5 text-muted opacity-70">
-      <img src="/brand/users-isotipo.svg" alt="" className="h-2.5 w-auto" />
+      <Image src="/brand/users-isotipo.svg" alt="" width={703} height={518} className="h-2.5 w-auto" />
       <span className="text-[11px] tracking-wide">by USERS</span>
     </div>
   );

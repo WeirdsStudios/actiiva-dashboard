@@ -18,7 +18,22 @@ export default async function DiscoveryEntryPage({
   const result = await getSessionByAccessToken(accessToken);
 
   if (result.state === "not_found") return <SessionUnavailable reason="not_found" />;
-  if (result.state === "expired") return <SessionUnavailable reason="expired" />;
+  if (result.state === "expired") {
+    if (result.session.status === "approved") return <SessionUnavailable reason="approved" />;
+    const expiredLockState = computeSessionLockState(result.session);
+    if (expiredLockState.locked) {
+      return (
+        <DiscoverySessionLockedScreen
+          sessionId={result.session.id}
+          accessToken={accessToken}
+          alreadyRequested={expiredLockState.reopenRequested}
+        />
+      );
+    }
+    return <SessionUnavailable reason="expired" />;
+  }
+
+  if (result.session.status === "approved") return <SessionUnavailable reason="approved" />;
 
   // Bloqueo tras la ventana de 20 días desde el primer cierre (decisión del
   // dueño del proyecto, 09-ago-2026) — se evalúa aquí, antes de renderizar
@@ -26,18 +41,25 @@ export default async function DiscoveryEntryPage({
   // profundidad, ver server/chat-actions.ts.
   const lockState = computeSessionLockState(result.session);
   if (lockState.locked) {
-    return <DiscoverySessionLockedScreen sessionId={result.session.id} alreadyRequested={lockState.reopenRequested} />;
+    return (
+      <DiscoverySessionLockedScreen
+        sessionId={result.session.id}
+        accessToken={accessToken}
+        alreadyRequested={lockState.reopenRequested}
+      />
+    );
   }
 
   const fileUploadQuestions = questionPackActiiva.questions.filter((q) => q.type === "file_upload");
   const [initialHistory, businessNameDraft] = await Promise.all([
-    getChatHistory(result.session.id),
-    getBusinessNameDraft(result.session.id),
+    getChatHistory(result.session.id, accessToken),
+    getBusinessNameDraft(result.session.id, accessToken),
   ]);
 
   return (
     <DiscoveryChatScreen
       sessionId={result.session.id}
+      accessToken={accessToken}
       businessNameDraft={businessNameDraft}
       fileUploadQuestions={fileUploadQuestions}
       initialHistory={initialHistory}

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { UsersSignature } from "./UsersSignature";
 
 interface DiscoverySessionPausedScreenProps {
@@ -15,7 +16,7 @@ export function DiscoverySessionPausedScreen({ onResume }: DiscoverySessionPause
   return (
     <div className="mx-auto flex h-screen max-w-md flex-col justify-between bg-canvas p-6">
       <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-        <img src="/brand/actiiva-symbol-primary.svg" alt="ACTIIVA" className="h-10 w-auto" />
+        <Image src="/brand/actiiva-symbol-primary.svg" alt="ACTIIVA" width={52} height={67} className="h-10 w-auto" />
         <div className="flex flex-col gap-3">
           <h1 className="text-xl font-semibold text-foreground">Tu progreso quedó guardado</h1>
           <p className="text-base text-secondary">

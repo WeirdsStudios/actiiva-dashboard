@@ -24,14 +24,12 @@ export interface SessionLockState {
 // reopen_authorized_until en el futuro desbloquea, sin importar cuánto haya
 // pasado del plazo original. Ver server/actions.ts (closeDiscoverySession,
 // requestSessionReopen) para quién escribe estos campos.
-export function computeSessionLockState(session: SessionLockFields): SessionLockState {
+export function computeSessionLockState(session: SessionLockFields, now = Date.now()): SessionLockState {
   if (!session.submitted_at) {
     return { locked: false, reopenRequested: false };
   }
 
   const deadline = new Date(session.submitted_at).getTime() + ADJUSTMENT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-
   if (now <= deadline) {
     return { locked: false, reopenRequested: false };
   }

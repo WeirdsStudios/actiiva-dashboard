@@ -21,7 +21,11 @@ const authorizedUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOS
 
 const { data, error } = await supabaseAdmin
   .from("discovery_sessions")
-  .update({ reopen_authorized_until: authorizedUntil, reopen_requested_at: null })
+  .update({
+    reopen_authorized_until: authorizedUntil,
+    reopen_requested_at: null,
+    token_expires_at: authorizedUntil,
+  })
   .eq("access_token", accessToken)
   .select("business_name_draft")
   .maybeSingle();
