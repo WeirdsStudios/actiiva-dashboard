@@ -85,7 +85,7 @@ export async function getAdminOrganization(organizationId: string) {
       .order("updated_at", { ascending: false }),
     supabaseAdmin
       .from("organization_members")
-      .select("user_id, role, status, created_at")
+      .select("user_id, role, status, created_at, invited_at, activated_at, updated_at")
       .eq("organization_id", organizationId)
       .order("created_at"),
   ]);

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminOrganization } from "@/features/organizations/server/data";
+import { InviteMemberForm, MemberAccessList, type MemberAccessItem } from "@/features/organizations/ui/MemberAccessPanel";
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Activo",
@@ -81,17 +82,11 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
               <span className="text-xs text-muted">miembros asignados</span>
             </div>
             {members.length === 0 ? (
-              <p className="mt-4 text-sm leading-6 text-secondary">La cuenta está aislada y lista. Los accesos del equipo del cliente se activarán en el siguiente slice.</p>
+              <p className="mt-4 text-sm leading-6 text-secondary">La cuenta está aislada y lista para su primer propietario.</p>
             ) : (
-              <ul className="mt-4 space-y-3">
-                {members.map((member) => (
-                  <li key={member.user_id} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="truncate text-foreground">{member.email ?? "Usuario"}</span>
-                    <span className="rounded-full bg-surface-subtle px-2 py-0.5 text-xs text-secondary">{member.role}</span>
-                  </li>
-                ))}
-              </ul>
+              <MemberAccessList organizationId={organization.id} members={members as MemberAccessItem[]} />
             )}
+            <InviteMemberForm organizationId={organization.id} />
           </section>
           <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Frontera de datos</p>

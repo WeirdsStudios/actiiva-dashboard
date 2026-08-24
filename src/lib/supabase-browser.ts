@@ -7,8 +7,8 @@ export function createSupabaseBrowserClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      // Las invitaciones y recuperaciones administrativas llegan con tokens
-      // en el fragmento. LoginForm los procesa de forma explicita y los
+      // Las invitaciones y recuperaciones llegan con tokens en el fragmento.
+      // La pantalla de acceso correspondiente los procesa de forma explicita y los
       // elimina antes de permitir que el usuario establezca su contrasena.
       auth: { detectSessionInUrl: false },
     },
