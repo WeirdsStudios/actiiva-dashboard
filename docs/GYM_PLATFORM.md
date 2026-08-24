@@ -6,9 +6,9 @@ ACTGym es el primer vertical de industria construido sobre el core multi-tenant 
 
 ## Recorridos
 
-- `/`: sitio público con método, horarios y tres membresías.
-- `/mi-cuenta`: portal del socio. El usuario de prueba ve su plan Progreso, estado, próximo pago y clases.
-- `/gestion`: panel para propietarios y administradores. Muestra socios, ingreso mensual estimado, prospectos, agenda y planes; permite cambiar el estado de un socio.
+- `/`: sitio público con método, agenda con disponibilidad y tres membresías.
+- `/mi-cuenta`: portal del socio. Permite consultar el plan, reservar, cancelar, entrar a lista de espera y pedir nuevos horarios.
+- `/gestion`: panel para propietarios y administradores. Muestra socios, ingreso mensual estimado, ocupación, reservas, lista de espera y demanda de nuevos horarios.
 
 En la prueba inicial, la cuenta administradora actual ocupa dos perfiles de forma intencional: propietario de ACTGym y socio demo. Así se pueden recorrer las dos perspectivas con la misma identidad sin crear ni compartir otra contraseña.
 
@@ -19,6 +19,8 @@ En la prueba inicial, la cuenta administradora actual ocupa dos perfiles de form
 - Un socio sólo puede leer su propio perfil y no puede modificar su estado.
 - Un propietario o administrador activo puede leer y actualizar socios de su organización.
 - El visitante anónimo sólo puede leer el sitio, planes y clases publicados.
+- Las reservas se asignan en una transacción para evitar sobreventa y promueven automáticamente la lista de espera.
+- La disponibilidad pública sólo expone totales agregados, nunca identidades.
 - El hostname se resuelve en `src/proxy.ts`; el subdominio se valida contra una lista explícita antes del rewrite.
 
 ## Datos ficticios
@@ -30,7 +32,6 @@ En la prueba inicial, la cuenta administradora actual ocupa dos perfiles de form
 
 ## Fuera del primer slice
 
-- Reservas y control de capacidad por fecha.
 - Cobros reales y conciliación con Stripe.
 - Check-in por QR.
 - Rutinas, mediciones y progreso real.
@@ -38,4 +39,4 @@ En la prueba inicial, la cuenta administradora actual ocupa dos perfiles de form
 - Edición del sitio, planes y agenda desde el panel.
 - Dominio propio del cliente además del subdominio ACTIIVA.
 
-Estas piezas deben añadirse como slices end-to-end; no se deben simular con botones que aparenten ejecutar una operación inexistente.
+Estas piezas deben añadirse como slices end-to-end; no se deben simular con botones o indicadores que aparenten una operación inexistente. La dirección completa está en `docs/ACTIIVA_PRODUCT.md`.

@@ -15,6 +15,7 @@
 .gym-platform * { box-sizing: border-box; }
 .gym-platform a { color: inherit; text-decoration: none; }
 .gym-platform button, .gym-platform input, .gym-platform select { font: inherit; }
+.gym-platform :is(a, button, input, select):focus-visible { outline: 3px solid color-mix(in srgb, var(--gym-accent) 65%, white); outline-offset: 3px; }
 .gym-kicker, .gym-panel-label { color: var(--gym-steel); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .gym-wordmark { display: inline-flex; align-items: center; color: currentColor; font-family: var(--font-gym-display); font-size: 31px; letter-spacing: .035em; line-height: 1; }
 .gym-wordmark i { color: var(--gym-accent); font-style: normal; margin: 0 2px; transform: translateY(-1px); }
@@ -65,6 +66,7 @@
 .gym-schedule-section { display: grid; grid-template-columns: minmax(260px, .6fr) 1.4fr; gap: 7vw; padding: 110px clamp(24px, 7vw, 110px); }
 .gym-section-heading h2 { margin: 17px 0; font-family: var(--font-gym-display); font-size: clamp(58px, 6vw, 92px); font-weight: 400; line-height: .9; text-transform: uppercase; }
 .gym-section-heading > p:last-child { max-width: 380px; color: var(--gym-steel); line-height: 1.7; }
+.gym-schedule-cta { display: inline-block; margin-top: 24px; border-bottom: 1px solid var(--gym-ink); padding-bottom: 4px; font-size: 12px; font-weight: 750; }
 .gym-schedule-list { border-top: 2px solid var(--gym-ink); }
 .gym-schedule-list article { display: grid; grid-template-columns: 105px 1fr auto; gap: 25px; align-items: center; min-height: 112px; border-bottom: 1px solid var(--gym-line); }
 .gym-class-time strong { display: block; font-family: var(--font-gym-display); font-size: 30px; font-weight: 400; }
@@ -72,6 +74,8 @@
 .gym-schedule-list h3 { font-size: 20px; }
 .gym-intensity { min-width: 55px; padding: 6px 8px; border: 1px solid var(--gym-line); text-align: center; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
 .gym-intensity.is-high { border-color: var(--gym-accent); color: var(--gym-accent); }
+.gym-availability { min-width: 72px; padding: 7px 9px; border: 1px solid #84a996; color: #35644e; text-align: center; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
+.gym-availability.is-full { border-color: var(--gym-accent); color: #9d442f; }
 
 .gym-plans-section { padding: 105px clamp(24px, 7vw, 110px) 120px; background: var(--gym-ink); color: var(--gym-paper); }
 .gym-section-heading.is-light .gym-kicker { color: rgba(255,255,255,.42); }
@@ -90,6 +94,11 @@
 .gym-plan-grid li { margin: 9px 0; font-size: 12px; opacity: .7; }
 .gym-plan-grid li::before { margin-right: 8px; content: "—"; }
 .gym-plan-grid article > a { display: inline-block; margin-top: 26px; border-bottom: 1px solid currentColor; padding-bottom: 4px; font-size: 12px; font-weight: 700; }
+.gym-contact-strip { display: grid; grid-template-columns: 1.25fr .75fr; gap: 8vw; align-items: end; padding: 78px clamp(24px, 7vw, 110px); background: var(--gym-accent); color: #171a1d; }
+.gym-contact-strip h2 { max-width: 760px; margin-top: 12px; font-family: var(--font-gym-display); font-size: clamp(48px, 6vw, 86px); font-weight: 400; line-height: .9; text-transform: uppercase; }
+.gym-contact-strip > div:last-child { display: grid; gap: 12px; padding-bottom: 8px; }
+.gym-contact-strip > div:last-child span { font-size: 12px; }
+.gym-contact-strip a { width: fit-content; border-bottom: 1px solid currentColor; padding-bottom: 4px; font-size: 18px; font-weight: 800; }
 .gym-footer { display: grid; grid-template-columns: 1fr 1fr auto; gap: 35px; align-items: start; padding: 62px clamp(24px, 7vw, 110px); background: #15191d; color: var(--gym-paper); }
 .gym-footer > div { display: flex; flex-direction: column; font-size: 12px; }
 .gym-footer > div span { margin-top: 6px; color: rgba(255,255,255,.45); }
@@ -146,16 +155,46 @@
 .gym-progress-ring strong { font-family: var(--font-gym-display); font-size: 55px; font-weight: 400; line-height: .8; }
 .gym-progress-ring span { margin-top: 6px; color: rgba(255,255,255,.5); font-size: 9px; text-transform: uppercase; }
 .gym-progress-panel > p:last-child { color: rgba(255,255,255,.55); font-size: 11px; line-height: 1.5; text-align: center; }
+.gym-next-session-panel { min-height: 310px; padding: 30px; background: var(--gym-ink); color: white; }
+.gym-next-session-panel .gym-panel-label { color: rgba(255,255,255,.4); }
+.gym-next-session-panel time, .gym-next-session-panel > strong { display: block; margin-top: 34px; color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 54px; font-weight: 400; line-height: 1; }
+.gym-next-session-panel h2 { margin-top: 8px; font-family: var(--font-gym-display); font-size: 38px; font-weight: 400; text-transform: uppercase; }
+.gym-next-session-panel p { margin-top: 8px; color: rgba(255,255,255,.58); font-size: 11px; line-height: 1.6; }
+.gym-next-session-panel > span { display: inline-block; margin-top: 28px; border-left: 3px solid var(--gym-accent); padding-left: 10px; color: rgba(255,255,255,.78); font-size: 10px; text-transform: uppercase; }
 .gym-member-classes { margin-top: 55px; }
 .gym-member-section-head { display: flex; justify-content: space-between; align-items: end; }
 .gym-member-section-head h2 { margin-top: 8px; font-size: 28px; }
 .gym-member-section-head > span { color: var(--gym-steel); font-size: 10px; }
-.gym-member-class-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 22px; background: var(--gym-line); border: 1px solid var(--gym-line); }
-.gym-member-class-grid article { padding: 24px; background: var(--gym-paper); }
+.gym-member-class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 22px; background: var(--gym-line); border: 1px solid var(--gym-line); }
+.gym-member-class-grid article { position: relative; min-height: 330px; padding: 24px; background: var(--gym-paper); }
+.gym-member-class-grid article.has-reserved { box-shadow: inset 0 4px var(--gym-accent); }
+.gym-member-class-grid article.has-waitlisted { box-shadow: inset 0 4px #a97d35; }
+.gym-class-card-top { display: flex; justify-content: space-between; align-items: baseline; }
+.gym-class-card-top > span { margin: 0; text-transform: capitalize; }
 .gym-member-class-grid time { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 32px; }
-.gym-member-class-grid h3 { margin-top: 26px; font-size: 18px; }
+.gym-member-class-grid h3 { margin-top: 30px; font-size: 18px; }
 .gym-member-class-grid p, .gym-member-class-grid span { display: block; margin-top: 6px; color: var(--gym-steel); font-size: 10px; }
-.gym-member-class-grid button { width: 100%; height: 36px; margin-top: 25px; border: 1px solid var(--gym-line); background: transparent; color: var(--gym-steel); font-size: 10px; }
+.gym-class-capacity { display: flex; justify-content: space-between; gap: 10px; margin-top: 24px; border-top: 1px solid var(--gym-line); padding-top: 14px; }
+.gym-class-capacity span, .gym-class-capacity small { margin: 0; font-size: 9px; }
+.gym-booking-state { width: fit-content; margin-top: 13px !important; padding: 5px 8px; font-family: var(--font-mono); text-transform: uppercase; }
+.gym-booking-state.is-reserved { background: #e4efe8; color: #34624d; }
+.gym-booking-state.is-waitlisted { background: #f3e9d7; color: #80591e; }
+.gym-booking-form { margin-top: 18px; }
+.gym-booking-form button { width: 100%; min-height: 40px; border: 1px solid var(--gym-ink); background: var(--gym-ink); color: white; cursor: pointer; font-size: 10px; font-weight: 750; }
+.gym-booking-form button:hover { border-color: var(--gym-accent); background: var(--gym-accent); color: var(--gym-ink); }
+.gym-booking-form button:disabled { cursor: wait; opacity: .58; }
+.gym-booking-form span { margin-top: 9px; line-height: 1.4; }
+.gym-booking-form .is-ok, .gym-demand-form .is-ok { color: #34624d; }
+.gym-booking-form .is-error, .gym-demand-form .is-error { color: #944531; }
+.gym-membership-blocked { margin-top: 18px !important; color: #944531 !important; }
+.gym-demand-panel { display: grid; grid-template-columns: .8fr 1.2fr; gap: 7vw; margin-top: 64px; padding: 38px; background: var(--gym-ink); color: white; }
+.gym-demand-panel h2 { margin: 10px 0 14px; font-family: var(--font-gym-display); font-size: 46px; font-weight: 400; line-height: .95; text-transform: uppercase; }
+.gym-demand-panel > div > p:last-child { max-width: 440px; color: rgba(255,255,255,.56); font-size: 12px; line-height: 1.65; }
+.gym-demand-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; align-content: center; }
+.gym-demand-form label { display: grid; gap: 7px; color: rgba(255,255,255,.62); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.gym-demand-form select { min-width: 0; height: 44px; border: 1px solid rgba(255,255,255,.22); border-radius: 0; background: #292f35; color: white; padding: 0 10px; }
+.gym-demand-form button { grid-column: 1 / -1; height: 45px; border: 0; background: var(--gym-accent); color: var(--gym-ink); cursor: pointer; font-size: 11px; font-weight: 800; }
+.gym-demand-form p { grid-column: 1 / -1; margin: 0; font-size: 10px; }
 
 .gym-management-shell { display: grid; grid-template-columns: 210px 1fr; max-width: 1500px; min-height: calc(100vh - 74px); margin: 0 auto; }
 .gym-management-nav { display: flex; flex-direction: column; padding: 38px 28px; border-right: 1px solid #d9dad7; }
@@ -170,6 +209,7 @@
 .gym-management-heading { display: flex; justify-content: space-between; align-items: end; }
 .gym-health-signal { display: flex; gap: 8px; align-items: center; font-size: 11px; }
 .gym-health-signal span { width: 8px; height: 8px; border-radius: 50%; background: #4e8b70; }
+.gym-health-signal.has-attention span { background: var(--gym-accent); }
 .gym-metrics { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 38px; border-top: 1px solid var(--gym-line); border-left: 1px solid var(--gym-line); }
 .gym-metrics article { min-height: 160px; padding: 22px; border-right: 1px solid var(--gym-line); border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
 .gym-metrics article > span { color: var(--gym-steel); font-size: 10px; text-transform: uppercase; }
@@ -196,6 +236,35 @@
 .gym-status-form .is-ok { color: #3f755d; }
 .gym-status-form .is-error { color: #944531; }
 .gym-management-columns { display: grid; grid-template-columns: 1.2fr .8fr; gap: 35px; }
+.gym-operations-calendar { border-top: 2px solid var(--gym-ink); }
+.gym-operations-calendar article { display: grid; grid-template-columns: 120px minmax(280px, 1fr) minmax(190px, .65fr); gap: 24px; align-items: center; min-height: 112px; padding: 18px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
+.gym-operation-date { display: grid; gap: 7px; }
+.gym-operation-date span { color: var(--gym-steel); font-size: 10px; text-transform: capitalize; }
+.gym-operation-date strong { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 34px; font-weight: 400; }
+.gym-operation-main h3 { font-size: 17px; }
+.gym-operation-main p, .gym-operation-main small, .gym-operation-roster p { margin-top: 5px; color: var(--gym-steel); font-size: 9px; }
+.gym-occupancy-track { overflow: hidden; height: 4px; margin-top: 14px; background: #e3e4e1; }
+.gym-occupancy-track span { display: block; height: 100%; background: var(--gym-accent); }
+.gym-operation-roster { border-left: 1px solid var(--gym-line); padding-left: 20px; }
+.gym-operation-roster > span { font-size: 9px; font-weight: 750; text-transform: uppercase; }
+.gym-operation-roster p { line-height: 1.5; }
+.gym-demand-insights { padding: 34px; background: #242a30; color: white; }
+.gym-demand-insights .gym-panel-label, .gym-demand-insights .gym-management-section-head > span { color: rgba(255,255,255,.42); }
+.gym-demand-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,.16); }
+.gym-demand-grid article { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 24px; background: #2d343b; }
+.gym-demand-grid article.is-ready { background: var(--gym-accent); color: #181b1e; }
+.gym-demand-grid article > div:first-child span { color: rgba(255,255,255,.48); font-size: 9px; text-transform: uppercase; }
+.gym-demand-grid article.is-ready > div:first-child span { color: rgba(0,0,0,.54); }
+.gym-demand-grid h3 { margin-top: 5px; font-size: 18px; }
+.gym-demand-grid article > strong { font-family: var(--font-gym-display); font-size: 43px; font-weight: 400; line-height: .9; }
+.gym-demand-grid article > strong small { font-size: 20px; opacity: .42; }
+.gym-demand-track { grid-column: 1 / -1; overflow: hidden; height: 4px; background: rgba(255,255,255,.12); }
+.gym-demand-track span { display: block; height: 100%; background: var(--gym-accent); }
+.gym-demand-grid article.is-ready .gym-demand-track { background: rgba(0,0,0,.14); }
+.gym-demand-grid article.is-ready .gym-demand-track span { background: var(--gym-ink); }
+.gym-demand-grid article > p, .gym-demand-grid article > small { grid-column: 1 / -1; color: rgba(255,255,255,.52); font-size: 9px; line-height: 1.55; }
+.gym-demand-grid article.is-ready > p, .gym-demand-grid article.is-ready > small { color: rgba(0,0,0,.6); }
+.gym-empty-operation { grid-column: 1 / -1; padding: 28px; background: #2d343b; color: rgba(255,255,255,.55); font-size: 11px; }
 .gym-manage-classes, .gym-manage-plans { border-top: 2px solid var(--gym-ink); }
 .gym-manage-classes article, .gym-manage-plans article { display: flex; gap: 16px; align-items: center; min-height: 68px; padding: 12px 14px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
 .gym-manage-classes time { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 25px; }
@@ -210,12 +279,15 @@
   .gym-hero-copy { min-height: 620px; }
   .gym-training-rail { min-height: 560px; border-top: 1px solid rgba(255,255,255,.15); border-left: 0; }
   .gym-manifesto, .gym-schedule-section { grid-template-columns: 1fr; }
+  .gym-contact-strip, .gym-demand-panel { grid-template-columns: 1fr; }
   .gym-plan-grid { grid-template-columns: 1fr; }
   .gym-plan-grid article { min-height: auto; }
   .gym-member-class-grid, .gym-metrics { grid-template-columns: repeat(2, 1fr); }
   .gym-management-shell { grid-template-columns: 1fr; }
   .gym-management-nav { display: none; }
   .gym-management-columns { grid-template-columns: 1fr; }
+  .gym-operations-calendar article { grid-template-columns: 100px 1fr; }
+  .gym-operation-roster { grid-column: 2; border-left: 0; padding-left: 0; }
 }
 
 @media (max-width: 680px) {
@@ -227,6 +299,7 @@
   .gym-training-rail { min-height: 520px; }
   .gym-rail-row { padding: 18px 20px; }
   .gym-manifesto, .gym-schedule-section, .gym-plans-section { padding: 80px 22px; }
+  .gym-contact-strip { padding: 64px 22px; }
   .gym-manifesto h2 { font-size: 65px; }
   .gym-manifesto-copy > p:first-child { font-size: 24px; }
   .gym-manifesto dl { grid-template-columns: 1fr; }
@@ -248,6 +321,8 @@
   .gym-member-welcome h1, .gym-management-heading h1 { font-size: 56px; }
   .gym-week-score { border-left: 0; border-top: 3px solid var(--gym-accent); padding: 16px 0 0; }
   .gym-member-grid, .gym-member-class-grid, .gym-metrics { grid-template-columns: 1fr; }
+  .gym-demand-panel { padding: 28px 22px; }
+  .gym-demand-form, .gym-demand-grid { grid-template-columns: 1fr; }
   .gym-member-plan dl { grid-template-columns: 1fr; }
   .gym-member-section-head > span { display: none; }
   .gym-management-main { padding: 38px 16px 70px; }
@@ -255,6 +330,10 @@
   .gym-table-head { display: none; }
   .gym-table-row { grid-template-columns: 1fr 1fr; gap: 14px; padding: 18px; }
   .gym-status-form { grid-column: 1 / -1; }
+  .gym-operations-calendar article { grid-template-columns: 1fr; gap: 12px; }
+  .gym-operation-date { display: flex; justify-content: space-between; align-items: baseline; }
+  .gym-operation-roster { grid-column: 1; border-top: 1px solid var(--gym-line); padding: 12px 0 0; }
+  .gym-demand-insights { margin-right: -16px; margin-left: -16px; padding: 30px 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

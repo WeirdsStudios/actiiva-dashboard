@@ -8,7 +8,7 @@ Actualizado: 24-ago-2026.
 
 El vertical slice actual cubre **Operaciones de Discovery**, la frontera multi-tenant, el primer acceso de clientes y la primera plataforma vertical para gimnasios. `organizations` representa a cada cliente, `organization_members` define operadores y roles, y `discovery_sessions.tenant_id` vincula el onboarding aprobado con su cuenta. ACTGym añade sitio publicado, planes, clases y socios finales sin convertir a esos socios en operadores ACTIIVA.
 
-El alcance y las limitaciones del vertical gym están documentados en `docs/GYM_PLATFORM.md`.
+El alcance y las limitaciones del vertical gym están documentados en `docs/GYM_PLATFORM.md`; la dirección compartida de producto vive en `docs/ACTIIVA_PRODUCT.md`.
 
 ## Flujo público
 

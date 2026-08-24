@@ -4,10 +4,15 @@ import { notFound } from "next/navigation";
 import { getPublicGymPlatform } from "@/features/gym-platform/server/data";
 import { GymPublicHeader, GymWordmark } from "@/features/gym-platform/ui/GymChrome";
 
-const DAY_LABELS: Record<number, string> = { 0: "Dom", 1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb" };
-
 function money(cents: number): string {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(cents / 100);
+}
+
+function occurrenceDate(value: string, compact = false): string {
+  return new Intl.DateTimeFormat("es-MX", compact
+    ? { weekday: "short", day: "numeric" }
+    : { weekday: "long", day: "numeric", month: "short" })
+    .format(new Date(`${value}T12:00:00`));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ siteSubdomain: string }> }): Promise<Metadata> {
@@ -20,7 +25,7 @@ export default async function GymPublicPage({ params }: { params: Promise<{ site
   const { siteSubdomain } = await params;
   const platform = await getPublicGymPlatform(siteSubdomain);
   if (!platform) notFound();
-  const { site, plans, classes } = platform;
+  const { site, plans, occurrences } = platform;
   return (
     <main className="gym-public-page" style={{ "--gym-ink": site.primaryColor, "--gym-accent": site.accentColor } as React.CSSProperties}>
       <GymPublicHeader />
@@ -32,16 +37,16 @@ export default async function GymPublicPage({ params }: { params: Promise<{ site
           <div className="gym-hero-actions"><a href="#planes" className="gym-solid-button">Elegir mi plan</a><a href="#horarios" className="gym-text-link">Ver la semana →</a></div>
         </div>
         <aside className="gym-training-rail" aria-label="Agenda destacada">
-          <div className="gym-rail-head"><span>Hoy en el carril</span><strong>{classes.length} formatos</strong></div>
-          {classes.slice(0, 4).map((gymClass, index) => (
-            <div key={gymClass.id} className="gym-rail-row">
+          <div className="gym-rail-head"><span>Próximas sesiones</span><strong>Cupo en vivo</strong></div>
+          {occurrences.slice(0, 4).map((occurrence, index) => (
+            <div key={occurrence.key} className="gym-rail-row">
               <span className="gym-rail-index">{String(index + 1).padStart(2, "0")}</span>
-              <strong>{gymClass.name}</strong>
-              <span>{gymClass.startTime}</span>
-              <small>con {gymClass.coach}</small>
+              <strong>{occurrence.name}</strong>
+              <span>{occurrence.startTime}</span>
+              <small>{occurrenceDate(occurrence.classDate, true)} · {occurrence.availableSpots > 0 ? `${occurrence.availableSpots} lugares` : "Lista de espera"}</small>
             </div>
           ))}
-          <div className="gym-rail-marker"><span>Tu siguiente sesión empieza aquí</span></div>
+          <div className="gym-rail-marker"><span>Reserva desde tu cuenta ACTGym</span></div>
         </aside>
       </section>
 
@@ -51,13 +56,13 @@ export default async function GymPublicPage({ params }: { params: Promise<{ site
       </section>
 
       <section id="horarios" className="gym-schedule-section">
-        <div className="gym-section-heading"><p className="gym-kicker">La semana</p><h2>Elige tu ritmo.</h2><p>Cuatro formatos, mañana y tarde. La constancia cabe en tu agenda.</p></div>
+        <div className="gym-section-heading"><p className="gym-kicker">Agenda en vivo</p><h2>Elige tu ritmo.</h2><p>Consulta las próximas sesiones y su disponibilidad. Los socios reservan desde su portal.</p><Link href="/mi-cuenta" className="gym-schedule-cta">Abrir mi agenda →</Link></div>
         <div className="gym-schedule-list">
-          {classes.map((gymClass) => (
-            <article key={gymClass.id}>
-              <div className="gym-class-time"><strong>{gymClass.startTime}</strong><span>{gymClass.durationMinutes} min</span></div>
-              <div><h3>{gymClass.name}</h3><p>{gymClass.weekdays.map((day) => DAY_LABELS[day]).join(" · ")} · Coach {gymClass.coach}</p></div>
-              <span className={`gym-intensity is-${gymClass.intensity}`}>{gymClass.intensity === "high" ? "Alta" : gymClass.intensity === "medium" ? "Media" : "Base"}</span>
+          {occurrences.slice(0, 8).map((occurrence) => (
+            <article key={occurrence.key}>
+              <div className="gym-class-time"><strong>{occurrence.startTime}</strong><span>{occurrence.durationMinutes} min</span></div>
+              <div><h3>{occurrence.name}</h3><p>{occurrenceDate(occurrence.classDate)} · Coach {occurrence.coach}</p></div>
+              <span className={`gym-availability ${occurrence.availableSpots === 0 ? "is-full" : ""}`}>{occurrence.availableSpots > 0 ? `${occurrence.availableSpots} libres` : "Espera"}</span>
             </article>
           ))}
         </div>
@@ -71,11 +76,13 @@ export default async function GymPublicPage({ params }: { params: Promise<{ site
               <span className="gym-plan-number">0{index + 1}</span><h3>{plan.name}</h3><p>{plan.description}</p>
               <div className="gym-price"><strong>{money(plan.priceCents)}</strong><span>/ mes</span></div>
               <ul>{plan.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
-              <Link href="/mi-cuenta">Probar como socio →</Link>
+              <Link href="/mi-cuenta">Acceder como socio →</Link>
             </article>
           ))}
         </div>
       </section>
+
+      <section className="gym-contact-strip"><div><p className="gym-kicker">¿Primera vez?</p><h2>Conoce el espacio antes de elegir.</h2></div><div><span>Agenda una visita con el equipo</span><a href={`tel:${site.phone.replace(/\s/g, "")}`}>{site.phone} →</a></div></section>
 
       <footer className="gym-footer"><GymWordmark /><div><strong>{site.address}</strong><span>{site.phone}</span></div><nav><Link href="/mi-cuenta">Portal de socios</Link><Link href="/gestion">Gestión</Link></nav><small>Negocio de demostración creado con ACTIIVA.</small></footer>
     </main>
