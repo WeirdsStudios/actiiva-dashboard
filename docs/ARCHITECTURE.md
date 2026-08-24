@@ -6,7 +6,9 @@ Actualizado: 24-ago-2026.
 
 `dashboard` es un repositorio y despliegue independiente. Comparte el proyecto Supabase de ACTIIVA con el onboarding, pero no importa código de `user-core` ni de la landing basada en Healia.
 
-El vertical slice actual cubre **Operaciones de Discovery**, la frontera multi-tenant y el primer acceso de clientes. `organizations` representa a cada cliente, `organization_members` define membresías y roles explícitos, y `discovery_sessions.tenant_id` vincula el onboarding aprobado con su cuenta. Sedes, agenda, servicios y cobros todavía no forman parte de este repositorio.
+El vertical slice actual cubre **Operaciones de Discovery**, la frontera multi-tenant, el primer acceso de clientes y la primera plataforma vertical para gimnasios. `organizations` representa a cada cliente, `organization_members` define operadores y roles, y `discovery_sessions.tenant_id` vincula el onboarding aprobado con su cuenta. ACTGym añade sitio publicado, planes, clases y socios finales sin convertir a esos socios en operadores ACTIIVA.
+
+El alcance y las limitaciones del vertical gym están documentados en `docs/GYM_PLATFORM.md`.
 
 ## Flujo público
 

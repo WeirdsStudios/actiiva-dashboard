@@ -6,6 +6,7 @@ Aplicación Next.js que contiene dos superficies:
 - `/admin/discovery`: centro interno de operaciones para crear y revisar sesiones.
 - `/admin/clients`: cartera de clientes creados desde onboardings aprobados.
 - `/portal`: acceso aislado para propietarios y equipos de cada cliente.
+- `mexgym.actiiva.mx`: plataforma demo ACTGym con sitio público, portal de socios y gestión.
 
 ## Desarrollo local
 

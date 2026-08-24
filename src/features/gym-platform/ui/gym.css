@@ -1,0 +1,262 @@
+.gym-platform {
+  --gym-ink: #20252b;
+  --gym-charcoal: #30363d;
+  --gym-steel: #737b84;
+  --gym-line: #d7d9d8;
+  --gym-chalk: #f4f3ed;
+  --gym-paper: #fbfaf5;
+  --gym-accent: #ff6b4a;
+  min-height: 100vh;
+  background: var(--gym-chalk);
+  color: var(--gym-ink);
+  font-family: var(--font-sans);
+}
+
+.gym-platform * { box-sizing: border-box; }
+.gym-platform a { color: inherit; text-decoration: none; }
+.gym-platform button, .gym-platform input, .gym-platform select { font: inherit; }
+.gym-kicker, .gym-panel-label { color: var(--gym-steel); font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.gym-wordmark { display: inline-flex; align-items: center; color: currentColor; font-family: var(--font-gym-display); font-size: 31px; letter-spacing: .035em; line-height: 1; }
+.gym-wordmark i { color: var(--gym-accent); font-style: normal; margin: 0 2px; transform: translateY(-1px); }
+.gym-wordmark.is-compact { font-size: 26px; }
+.gym-outline-button, .gym-solid-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border: 1px solid currentColor; font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+.gym-solid-button { border-color: var(--gym-accent); background: var(--gym-accent); color: #171a1d; }
+.gym-solid-button:hover { background: #ff8065; }
+.gym-text-link { font-size: 13px; font-weight: 700; }
+
+.gym-public-page { min-height: 100vh; background: var(--gym-chalk); }
+.gym-public-header { position: relative; z-index: 5; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 86px; padding: 0 clamp(24px, 5vw, 76px); border-bottom: 1px solid rgba(255,255,255,.17); background: var(--gym-ink); color: var(--gym-paper); }
+.gym-public-header nav { display: flex; gap: 34px; color: rgba(255,255,255,.67); font-size: 12px; font-weight: 600; }
+.gym-public-header nav a:hover { color: white; }
+.gym-public-header .gym-outline-button { justify-self: end; }
+
+.gym-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(380px, .75fr); min-height: 690px; background: var(--gym-ink); color: var(--gym-paper); }
+.gym-hero-copy { display: flex; flex-direction: column; justify-content: center; padding: 76px clamp(28px, 6vw, 96px) 92px; }
+.gym-hero-copy .gym-kicker { color: rgba(255,255,255,.48); }
+.gym-hero-copy h1 { max-width: 890px; margin: 24px 0 25px; font-family: var(--font-gym-display); font-size: clamp(74px, 9vw, 150px); font-weight: 400; letter-spacing: -.018em; line-height: .82; text-transform: uppercase; }
+.gym-hero-copy h1 em { color: var(--gym-accent); font-style: normal; }
+.gym-hero-copy > p:not(.gym-kicker) { max-width: 520px; color: rgba(255,255,255,.65); font-size: 17px; line-height: 1.65; }
+.gym-hero-actions { display: flex; align-items: center; gap: 28px; margin-top: 38px; }
+.gym-training-rail { position: relative; overflow: hidden; border-left: 1px solid rgba(255,255,255,.15); background: linear-gradient(135deg, rgba(255,255,255,.045), transparent 58%); }
+.gym-training-rail::before, .gym-training-rail::after { position: absolute; inset: 0 auto 0 22%; width: 1px; background: rgba(255,255,255,.08); content: ""; }
+.gym-training-rail::after { left: 78%; }
+.gym-rail-head { display: flex; justify-content: space-between; padding: 32px; border-bottom: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.48); font-family: var(--font-mono); font-size: 10px; letter-spacing: .11em; text-transform: uppercase; }
+.gym-rail-head strong { color: var(--gym-accent); }
+.gym-rail-row { position: relative; display: grid; grid-template-columns: 42px 1fr auto; gap: 8px 12px; align-items: center; min-height: 105px; padding: 20px 32px; border-bottom: 1px solid rgba(255,255,255,.13); }
+.gym-rail-row strong { font-size: 19px; }
+.gym-rail-row > span:not(.gym-rail-index) { font-family: var(--font-gym-display); font-size: 25px; }
+.gym-rail-row small { grid-column: 2 / 4; color: rgba(255,255,255,.45); font-size: 11px; }
+.gym-rail-index { color: var(--gym-accent); font-family: var(--font-mono); font-size: 10px; }
+.gym-rail-marker { position: absolute; right: 0; bottom: 50px; left: 0; height: 4px; background: var(--gym-accent); }
+.gym-rail-marker::before { position: absolute; top: -7px; left: 22%; width: 18px; height: 18px; border: 4px solid var(--gym-accent); border-radius: 50%; background: var(--gym-ink); content: ""; }
+.gym-rail-marker span { position: absolute; top: 16px; left: 22%; color: rgba(255,255,255,.58); font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+
+.gym-manifesto { display: grid; grid-template-columns: .9fr 1.1fr; gap: 10vw; padding: 120px clamp(24px, 7vw, 110px); background: var(--gym-paper); }
+.gym-manifesto h2 { margin-top: 22px; font-family: var(--font-gym-display); font-size: clamp(70px, 8vw, 125px); font-weight: 400; line-height: .82; text-transform: uppercase; }
+.gym-manifesto h2 span { color: var(--gym-accent); }
+.gym-manifesto-copy { align-self: end; max-width: 660px; }
+.gym-manifesto-copy > p:first-child { margin-bottom: 24px; font-size: 30px; font-weight: 650; letter-spacing: -.035em; line-height: 1.15; }
+.gym-manifesto-copy > p:nth-child(2) { max-width: 530px; color: var(--gym-steel); font-size: 16px; line-height: 1.7; }
+.gym-manifesto dl { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 56px; border-top: 1px solid var(--gym-line); }
+.gym-manifesto dl div { padding: 22px 18px 0 0; }
+.gym-manifesto dt { font-family: var(--font-gym-display); font-size: 36px; }
+.gym-manifesto dd { color: var(--gym-steel); font-size: 11px; }
+
+.gym-schedule-section { display: grid; grid-template-columns: minmax(260px, .6fr) 1.4fr; gap: 7vw; padding: 110px clamp(24px, 7vw, 110px); }
+.gym-section-heading h2 { margin: 17px 0; font-family: var(--font-gym-display); font-size: clamp(58px, 6vw, 92px); font-weight: 400; line-height: .9; text-transform: uppercase; }
+.gym-section-heading > p:last-child { max-width: 380px; color: var(--gym-steel); line-height: 1.7; }
+.gym-schedule-list { border-top: 2px solid var(--gym-ink); }
+.gym-schedule-list article { display: grid; grid-template-columns: 105px 1fr auto; gap: 25px; align-items: center; min-height: 112px; border-bottom: 1px solid var(--gym-line); }
+.gym-class-time strong { display: block; font-family: var(--font-gym-display); font-size: 30px; font-weight: 400; }
+.gym-class-time span, .gym-schedule-list article p { color: var(--gym-steel); font-size: 11px; }
+.gym-schedule-list h3 { font-size: 20px; }
+.gym-intensity { min-width: 55px; padding: 6px 8px; border: 1px solid var(--gym-line); text-align: center; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
+.gym-intensity.is-high { border-color: var(--gym-accent); color: var(--gym-accent); }
+
+.gym-plans-section { padding: 105px clamp(24px, 7vw, 110px) 120px; background: var(--gym-ink); color: var(--gym-paper); }
+.gym-section-heading.is-light .gym-kicker { color: rgba(255,255,255,.42); }
+.gym-plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 60px; border-top: 1px solid rgba(255,255,255,.2); border-left: 1px solid rgba(255,255,255,.2); }
+.gym-plan-grid article { position: relative; min-height: 500px; padding: 34px; border-right: 1px solid rgba(255,255,255,.2); border-bottom: 1px solid rgba(255,255,255,.2); }
+.gym-plan-grid article.is-featured { background: var(--gym-accent); color: #15181b; }
+.gym-plan-number { color: rgba(255,255,255,.38); font-family: var(--font-mono); font-size: 11px; }
+.gym-plan-grid .is-featured .gym-plan-number { color: rgba(0,0,0,.45); }
+.gym-plan-grid h3 { margin-top: 70px; font-family: var(--font-gym-display); font-size: 50px; font-weight: 400; text-transform: uppercase; }
+.gym-plan-grid article > p { min-height: 62px; margin-top: 8px; color: rgba(255,255,255,.58); line-height: 1.55; }
+.gym-plan-grid .is-featured > p { color: rgba(0,0,0,.62); }
+.gym-price { display: flex; align-items: baseline; gap: 5px; margin: 27px 0; }
+.gym-price strong { font-family: var(--font-gym-display); font-size: 44px; font-weight: 400; }
+.gym-price span { font-size: 11px; opacity: .55; }
+.gym-plan-grid ul { min-height: 105px; padding: 0; list-style: none; }
+.gym-plan-grid li { margin: 9px 0; font-size: 12px; opacity: .7; }
+.gym-plan-grid li::before { margin-right: 8px; content: "—"; }
+.gym-plan-grid article > a { display: inline-block; margin-top: 26px; border-bottom: 1px solid currentColor; padding-bottom: 4px; font-size: 12px; font-weight: 700; }
+.gym-footer { display: grid; grid-template-columns: 1fr 1fr auto; gap: 35px; align-items: start; padding: 62px clamp(24px, 7vw, 110px); background: #15191d; color: var(--gym-paper); }
+.gym-footer > div { display: flex; flex-direction: column; font-size: 12px; }
+.gym-footer > div span { margin-top: 6px; color: rgba(255,255,255,.45); }
+.gym-footer nav { display: flex; gap: 24px; font-size: 12px; }
+.gym-footer small { grid-column: 1 / -1; margin-top: 35px; color: rgba(255,255,255,.35); }
+
+.gym-app-header { display: grid; grid-template-columns: 1fr auto auto; align-items: center; min-height: 74px; padding: 0 38px; border-bottom: 1px solid #e0e1de; background: var(--gym-paper); }
+.gym-app-area { display: flex; align-items: baseline; gap: 14px; }
+.gym-app-area span { font-size: 13px; font-weight: 700; }
+.gym-app-area small { color: var(--gym-steel); font-size: 10px; }
+.gym-app-header form { margin-left: 28px; }
+.gym-app-header button { border: 0; background: none; color: var(--gym-steel); cursor: pointer; font-size: 12px; }
+
+.gym-access-page { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; background: var(--gym-paper); }
+.gym-access-visual { position: relative; display: flex; overflow: hidden; flex-direction: column; justify-content: space-between; padding: 54px; background: var(--gym-ink); color: var(--gym-paper); }
+.gym-access-count { position: relative; z-index: 2; align-self: end; color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 260px; line-height: .75; }
+.gym-access-visual > p { position: relative; z-index: 2; max-width: 520px; font-family: var(--font-gym-display); font-size: 54px; line-height: .95; text-transform: uppercase; }
+.gym-lane-lines { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), rgba(255,255,255,.08) 25%); transform: skewX(-12deg) scale(1.2); }
+.gym-access-form-wrap { align-self: center; width: min(460px, calc(100% - 48px)); margin: 60px auto; }
+.gym-back-link { color: var(--gym-steel); font-size: 12px; }
+.gym-access-form-wrap .gym-kicker { margin-top: 72px; }
+.gym-access-form-wrap h1 { margin: 15px 0 12px; font-family: var(--font-gym-display); font-size: 68px; font-weight: 400; line-height: .9; text-transform: uppercase; }
+.gym-access-copy { color: var(--gym-steel); line-height: 1.65; }
+.gym-login-form { display: grid; gap: 18px; margin-top: 36px; }
+.gym-login-form label { display: grid; gap: 8px; color: var(--gym-charcoal); font-size: 12px; font-weight: 700; }
+.gym-login-form input { height: 50px; border: 1px solid var(--gym-line); border-radius: 0; background: white; padding: 0 14px; outline: 0; }
+.gym-login-form input:focus { border-color: var(--gym-accent); box-shadow: 0 0 0 3px rgba(255,107,74,.15); }
+.gym-login-form button { height: 52px; border: 0; background: var(--gym-ink); color: white; cursor: pointer; font-size: 13px; font-weight: 700; }
+.gym-login-form button:hover { background: var(--gym-accent); color: var(--gym-ink); }
+.gym-form-error { margin: 16px 0 0; padding: 12px; background: #f8e7e2; color: #944531; font-size: 12px; }
+.gym-demo-note { margin-top: 24px; color: var(--gym-steel); font-size: 11px; line-height: 1.6; }
+
+.gym-member-app, .gym-management-app { min-height: 100vh; background: #eeefec; }
+.gym-member-main { max-width: 1180px; margin: 0 auto; padding: 62px 32px 90px; }
+.gym-member-welcome { display: flex; justify-content: space-between; align-items: end; }
+.gym-member-welcome h1, .gym-management-heading h1 { margin: 12px 0 8px; font-family: var(--font-gym-display); font-size: 72px; font-weight: 400; line-height: .9; text-transform: uppercase; }
+.gym-member-welcome > div > p:last-child { color: var(--gym-steel); }
+.gym-week-score { min-width: 180px; padding-left: 28px; border-left: 3px solid var(--gym-accent); }
+.gym-week-score strong { display: block; font-family: var(--font-gym-display); font-size: 60px; font-weight: 400; line-height: 1; }
+.gym-week-score strong span { color: var(--gym-steel); font-size: 30px; }
+.gym-week-score small { color: var(--gym-steel); }
+.gym-member-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin-top: 45px; }
+.gym-member-plan, .gym-progress-panel { min-height: 310px; padding: 30px; background: var(--gym-paper); }
+.gym-plan-badge { display: flex; align-items: end; justify-content: space-between; margin: 38px 0 45px; border-bottom: 1px solid var(--gym-line); padding-bottom: 22px; }
+.gym-plan-badge span { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 32px; }
+.gym-plan-badge strong { font-family: var(--font-gym-display); font-size: 52px; font-weight: 400; text-transform: uppercase; }
+.gym-member-plan dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.gym-member-plan dt { color: var(--gym-steel); font-size: 10px; text-transform: uppercase; }
+.gym-member-plan dd { margin-top: 7px; font-weight: 700; }
+.gym-progress-panel { position: relative; overflow: hidden; background: var(--gym-ink); color: white; }
+.gym-progress-panel .gym-panel-label { color: rgba(255,255,255,.4); }
+.gym-progress-ring { display: grid; place-content: center; width: 155px; height: 155px; margin: 28px auto 12px; border: 9px solid rgba(255,255,255,.11); border-top-color: var(--gym-accent); border-right-color: var(--gym-accent); border-radius: 50%; text-align: center; transform: rotate(12deg); }
+.gym-progress-ring strong, .gym-progress-ring span { transform: rotate(-12deg); }
+.gym-progress-ring strong { font-family: var(--font-gym-display); font-size: 55px; font-weight: 400; line-height: .8; }
+.gym-progress-ring span { margin-top: 6px; color: rgba(255,255,255,.5); font-size: 9px; text-transform: uppercase; }
+.gym-progress-panel > p:last-child { color: rgba(255,255,255,.55); font-size: 11px; line-height: 1.5; text-align: center; }
+.gym-member-classes { margin-top: 55px; }
+.gym-member-section-head { display: flex; justify-content: space-between; align-items: end; }
+.gym-member-section-head h2 { margin-top: 8px; font-size: 28px; }
+.gym-member-section-head > span { color: var(--gym-steel); font-size: 10px; }
+.gym-member-class-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 22px; background: var(--gym-line); border: 1px solid var(--gym-line); }
+.gym-member-class-grid article { padding: 24px; background: var(--gym-paper); }
+.gym-member-class-grid time { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 32px; }
+.gym-member-class-grid h3 { margin-top: 26px; font-size: 18px; }
+.gym-member-class-grid p, .gym-member-class-grid span { display: block; margin-top: 6px; color: var(--gym-steel); font-size: 10px; }
+.gym-member-class-grid button { width: 100%; height: 36px; margin-top: 25px; border: 1px solid var(--gym-line); background: transparent; color: var(--gym-steel); font-size: 10px; }
+
+.gym-management-shell { display: grid; grid-template-columns: 210px 1fr; max-width: 1500px; min-height: calc(100vh - 74px); margin: 0 auto; }
+.gym-management-nav { display: flex; flex-direction: column; padding: 38px 28px; border-right: 1px solid #d9dad7; }
+.gym-management-nav > strong { font-family: var(--font-gym-display); font-size: 28px; font-weight: 400; }
+.gym-management-nav nav { display: grid; gap: 5px; margin-top: 50px; }
+.gym-management-nav nav a { padding: 10px 12px; color: var(--gym-steel); font-size: 12px; }
+.gym-management-nav nav a.is-active { border-left: 3px solid var(--gym-accent); background: white; color: var(--gym-ink); font-weight: 700; }
+.gym-management-nav > div { display: grid; gap: 8px; margin-top: auto; }
+.gym-management-nav > div small { color: #4b7b67; font-size: 9px; text-transform: uppercase; }
+.gym-management-nav > div a { font-size: 11px; font-weight: 700; }
+.gym-management-main { min-width: 0; padding: 52px clamp(24px, 4vw, 62px) 90px; }
+.gym-management-heading { display: flex; justify-content: space-between; align-items: end; }
+.gym-health-signal { display: flex; gap: 8px; align-items: center; font-size: 11px; }
+.gym-health-signal span { width: 8px; height: 8px; border-radius: 50%; background: #4e8b70; }
+.gym-metrics { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 38px; border-top: 1px solid var(--gym-line); border-left: 1px solid var(--gym-line); }
+.gym-metrics article { min-height: 160px; padding: 22px; border-right: 1px solid var(--gym-line); border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
+.gym-metrics article > span { color: var(--gym-steel); font-size: 10px; text-transform: uppercase; }
+.gym-metrics strong { display: block; margin: 25px 0 8px; font-family: var(--font-gym-display); font-size: 44px; font-weight: 400; line-height: 1; }
+.gym-metrics small { color: var(--gym-steel); font-size: 9px; }
+.gym-management-section { margin-top: 46px; }
+.gym-management-section-head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 18px; }
+.gym-management-section-head h2 { margin-top: 7px; font-size: 24px; }
+.gym-management-section-head > span { color: var(--gym-steel); font-size: 10px; }
+.gym-customer-table { border-top: 2px solid var(--gym-ink); }
+.gym-table-head, .gym-table-row { display: grid; grid-template-columns: 1.4fr .7fr .55fr 1.35fr; gap: 20px; align-items: center; padding: 13px 16px; border-bottom: 1px solid var(--gym-line); }
+.gym-table-head { color: var(--gym-steel); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+.gym-table-row { min-height: 74px; background: var(--gym-paper); font-size: 12px; }
+.gym-table-row > div:first-child { display: grid; gap: 4px; }
+.gym-table-row small { color: var(--gym-steel); font-size: 9px; }
+.gym-customer-status { font-size: 10px; font-weight: 700; }
+.gym-customer-status.is-active { color: #3f755d; }
+.gym-customer-status.is-lead { color: #92611f; }
+.gym-customer-status.is-paused { color: var(--gym-steel); }
+.gym-status-form { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+.gym-status-form select, .gym-status-form button { height: 32px; border: 1px solid var(--gym-line); background: white; padding: 0 8px; font-size: 10px; }
+.gym-status-form button { background: var(--gym-ink); color: white; cursor: pointer; }
+.gym-status-form span { grid-column: 1 / -1; font-size: 9px; }
+.gym-status-form .is-ok { color: #3f755d; }
+.gym-status-form .is-error { color: #944531; }
+.gym-management-columns { display: grid; grid-template-columns: 1.2fr .8fr; gap: 35px; }
+.gym-manage-classes, .gym-manage-plans { border-top: 2px solid var(--gym-ink); }
+.gym-manage-classes article, .gym-manage-plans article { display: flex; gap: 16px; align-items: center; min-height: 68px; padding: 12px 14px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
+.gym-manage-classes time { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 25px; }
+.gym-manage-classes article > div, .gym-manage-plans article > div { display: grid; gap: 4px; }
+.gym-manage-classes small, .gym-manage-plans small { color: var(--gym-steel); font-size: 9px; }
+.gym-manage-classes article > span, .gym-manage-plans article > span { margin-left: auto; font-size: 10px; }
+
+@media (max-width: 980px) {
+  .gym-public-header { grid-template-columns: 1fr auto; }
+  .gym-public-header nav { display: none; }
+  .gym-hero { grid-template-columns: 1fr; }
+  .gym-hero-copy { min-height: 620px; }
+  .gym-training-rail { min-height: 560px; border-top: 1px solid rgba(255,255,255,.15); border-left: 0; }
+  .gym-manifesto, .gym-schedule-section { grid-template-columns: 1fr; }
+  .gym-plan-grid { grid-template-columns: 1fr; }
+  .gym-plan-grid article { min-height: auto; }
+  .gym-member-class-grid, .gym-metrics { grid-template-columns: repeat(2, 1fr); }
+  .gym-management-shell { grid-template-columns: 1fr; }
+  .gym-management-nav { display: none; }
+  .gym-management-columns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 680px) {
+  .gym-public-header { min-height: 72px; padding: 0 20px; }
+  .gym-public-header .gym-outline-button { min-height: 38px; padding: 0 12px; font-size: 10px; }
+  .gym-hero-copy { min-height: 560px; padding: 64px 22px; }
+  .gym-hero-copy h1 { font-size: 67px; }
+  .gym-hero-actions { align-items: flex-start; flex-direction: column; }
+  .gym-training-rail { min-height: 520px; }
+  .gym-rail-row { padding: 18px 20px; }
+  .gym-manifesto, .gym-schedule-section, .gym-plans-section { padding: 80px 22px; }
+  .gym-manifesto h2 { font-size: 65px; }
+  .gym-manifesto-copy > p:first-child { font-size: 24px; }
+  .gym-manifesto dl { grid-template-columns: 1fr; }
+  .gym-schedule-list article { grid-template-columns: 76px 1fr; padding: 18px 0; }
+  .gym-intensity { grid-column: 2; }
+  .gym-plan-grid article { padding: 28px; }
+  .gym-footer { grid-template-columns: 1fr; padding: 52px 22px; }
+  .gym-footer small { grid-column: 1; }
+  .gym-app-header { grid-template-columns: 1fr auto; padding: 0 18px; }
+  .gym-app-area { display: none; }
+  .gym-access-page { grid-template-columns: 1fr; }
+  .gym-access-visual { min-height: 270px; padding: 28px; }
+  .gym-access-count { font-size: 120px; }
+  .gym-access-visual > p { font-size: 34px; }
+  .gym-access-form-wrap .gym-kicker { margin-top: 52px; }
+  .gym-access-form-wrap h1 { font-size: 52px; }
+  .gym-member-main { padding: 42px 18px 70px; }
+  .gym-member-welcome { align-items: flex-start; flex-direction: column; gap: 30px; }
+  .gym-member-welcome h1, .gym-management-heading h1 { font-size: 56px; }
+  .gym-week-score { border-left: 0; border-top: 3px solid var(--gym-accent); padding: 16px 0 0; }
+  .gym-member-grid, .gym-member-class-grid, .gym-metrics { grid-template-columns: 1fr; }
+  .gym-member-plan dl { grid-template-columns: 1fr; }
+  .gym-member-section-head > span { display: none; }
+  .gym-management-main { padding: 38px 16px 70px; }
+  .gym-management-heading { align-items: flex-start; flex-direction: column; gap: 20px; }
+  .gym-table-head { display: none; }
+  .gym-table-row { grid-template-columns: 1fr 1fr; gap: 14px; padding: 18px; }
+  .gym-status-form { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gym-platform *, .gym-platform *::before, .gym-platform *::after { scroll-behavior: auto !important; transition: none !important; }
+}
