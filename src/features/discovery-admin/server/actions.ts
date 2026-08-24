@@ -7,8 +7,9 @@ import { redirect } from "next/navigation";
 import { assertAdmin, isConfiguredAdminEmail } from "@/lib/admin-auth";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createOrganizationSlug } from "@/features/organizations/lib/slug";
 
-export type AdminActionState = { ok: boolean; message?: string; link?: string };
+export type AdminActionState = { ok: boolean; message?: string; link?: string; destination?: string };
 
 async function requestBaseUrl(): Promise<string> {
   if (process.env.DISCOVERY_BASE_URL) return process.env.DISCOVERY_BASE_URL.replace(/\/$/, "");
@@ -135,4 +136,51 @@ export async function approveDiscoverySession(sessionId: string): Promise<AdminA
   revalidatePath("/admin/discovery");
   revalidatePath(`/admin/discovery/${sessionId}`);
   return { ok: true, message: "Sesión aprobada internamente." };
+}
+
+export async function createOrganizationFromDiscoverySession(sessionId: string): Promise<AdminActionState> {
+  const admin = await assertAdmin();
+  const { data: session, error: sessionError } = await supabaseAdmin
+    .from("discovery_sessions")
+    .select("business_name_draft, status, tenant_id")
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (sessionError || !session) {
+    return { ok: false, message: sessionError?.message ?? "No se encontró la sesión." };
+  }
+
+  if (session.tenant_id) {
+    return {
+      ok: true,
+      message: "Esta sesión ya pertenece a un cliente.",
+      destination: `/admin/clients/${session.tenant_id}`,
+    };
+  }
+  if (session.status !== "approved") {
+    return { ok: false, message: "Primero debes aprobar la información del onboarding." };
+  }
+
+  const businessName = session.business_name_draft?.trim();
+  if (!businessName || businessName.length > 120) {
+    return { ok: false, message: "La sesión necesita un nombre de negocio válido antes de crear el cliente." };
+  }
+
+  const { data: organizationId, error } = await supabaseAdmin.rpc("convert_discovery_session_to_organization", {
+    p_session_id: sessionId,
+    p_name: businessName,
+    p_slug: createOrganizationSlug(businessName),
+    p_created_by: admin.userId,
+  });
+  if (error || typeof organizationId !== "string") {
+    return { ok: false, message: "No se pudo crear el cliente. La sesión no fue modificada." };
+  }
+
+  revalidatePath("/admin/discovery");
+  revalidatePath(`/admin/discovery/${sessionId}`);
+  revalidatePath("/admin/clients");
+  return {
+    ok: true,
+    message: `${businessName} ya es un cliente ACTIIVA.`,
+    destination: `/admin/clients/${organizationId}`,
+  };
 }

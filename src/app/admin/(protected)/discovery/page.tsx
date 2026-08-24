@@ -90,7 +90,10 @@ export default async function AdminDiscoveryPage({
                 >
                   <div className="min-w-0">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="truncate font-semibold text-foreground">{session.businessName || "Negocio sin nombre"}</p>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <p className="truncate font-semibold text-foreground">{session.businessName || "Negocio sin nombre"}</p>
+                        {session.organizationId && <span className="shrink-0 rounded-full bg-signal-soft px-2 py-0.5 text-[10px] font-semibold text-primary">Cliente</span>}
+                      </div>
                       <span className="text-xs text-muted md:hidden">{STATUS_LABELS[session.status] ?? session.status}</span>
                     </div>
                     <div className="mt-2 flex items-center gap-3">

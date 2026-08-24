@@ -4,6 +4,7 @@ Aplicación Next.js que contiene dos superficies:
 
 - `/discovery/[accessToken]`: onboarding conversacional para el dueño del negocio.
 - `/admin/discovery`: centro interno de operaciones para crear y revisar sesiones.
+- `/admin/clients`: cartera de clientes creados desde onboardings aprobados.
 
 ## Desarrollo local
 
@@ -25,9 +26,10 @@ bun run build
 
 - Los enlaces públicos usan un token aleatorio distinto del ID de la sesión.
 - Todas las mutaciones validan `sessionId + accessToken` en el servidor.
-- RLS permanece cerrado para `anon` y `authenticated`; el backend usa service role.
+- Las tablas de discovery permanecen cerradas al acceso directo; el backend usa service role.
+- Organizaciones y membresías aplican RLS: cada usuario autenticado sólo descubre su propia frontera de cliente.
 - El agente serializa los turnos, limita la frecuencia y tiene un máximo de 300 mensajes por sesión.
 - Los archivos se validan por pregunta, MIME, tamaño y cantidad antes de llegar a Storage.
 - El panel valida en cada lectura y escritura que la identidad de Supabase Auth esté en `ADMIN_EMAILS`.
 
-El detalle del baseline y las decisiones del primer vertical slice está en `docs/ARCHITECTURE.md`.
+El detalle del baseline, la frontera multi-tenant y las decisiones de los vertical slices está en `docs/ARCHITECTURE.md`.

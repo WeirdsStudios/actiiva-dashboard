@@ -21,7 +21,7 @@ export default async function AdminDiscoveryDetailPage({ params }: { params: Pro
   const { sessionId } = await params;
   const result = await getAdminDiscoverySession(sessionId);
   if (!result) notFound();
-  const { session, responses, assets, latestExports } = result;
+  const { session, responses, assets, latestExports, organization } = result;
   const grouped = new Map<string, typeof responses>();
   for (const response of responses) {
     const current = grouped.get(response.section_id) ?? [];
@@ -101,7 +101,22 @@ export default async function AdminDiscoveryDetailPage({ params }: { params: Pro
         </div>
 
         <div className="flex flex-col gap-4">
-          <SessionActionPanel sessionId={session.id} status={session.status} reopenRequested={Boolean(session.reopen_requested_at)} />
+          {organization && (
+            <Link
+              href={`/admin/clients/${organization.id}`}
+              className="rounded-xl border border-primary/20 bg-signal-soft p-5 transition-colors hover:border-primary/40"
+            >
+              <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Cliente ACTIIVA</p>
+              <p className="mt-2 font-semibold text-foreground">{organization.name}</p>
+              <p className="mt-1 text-sm text-secondary">Cuenta activa · Abrir ficha →</p>
+            </Link>
+          )}
+          <SessionActionPanel
+            sessionId={session.id}
+            status={session.status}
+            reopenRequested={Boolean(session.reopen_requested_at)}
+            organizationId={session.tenant_id}
+          />
           <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Control de acceso</p>
             <dl className="mt-4 space-y-3 text-sm">

@@ -1,14 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import {
   approveDiscoverySession,
   authorizeDiscoveryReopen,
+  createOrganizationFromDiscoverySession,
   renewDiscoveryLink,
   type AdminActionState,
 } from "../server/actions";
 
-export function SessionActionPanel({ sessionId, status, reopenRequested }: { sessionId: string; status: string; reopenRequested: boolean }) {
+export function SessionActionPanel({
+  sessionId,
+  status,
+  reopenRequested,
+  organizationId,
+}: {
+  sessionId: string;
+  status: string;
+  reopenRequested: boolean;
+  organizationId: string | null;
+}) {
   const [result, setResult] = useState<AdminActionState | null>(null);
   const [copied, setCopied] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -48,18 +60,42 @@ export function SessionActionPanel({ sessionId, status, reopenRequested }: { ses
             Aprobar información
           </button>
         )}
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => {
-            if (window.confirm("El enlace anterior dejará de funcionar. ¿Crear uno nuevo?")) {
-              run(() => renewDiscoveryLink(sessionId));
-            }
-          }}
-          className="h-11 rounded-lg border border-border px-4 text-sm font-semibold text-secondary disabled:opacity-50"
-        >
-          Renovar enlace por 7 días
-        </button>
+        {status === "approved" && !organizationId && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              if (window.confirm("Se creará una cuenta de cliente y esta sesión quedará vinculada de forma permanente. ¿Continuar?")) {
+                run(() => createOrganizationFromDiscoverySession(sessionId));
+              }
+            }}
+            className="h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            Crear cliente ACTIIVA
+          </button>
+        )}
+        {organizationId && (
+          <Link
+            href={`/admin/clients/${organizationId}`}
+            className="flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white"
+          >
+            Abrir ficha del cliente
+          </Link>
+        )}
+        {status !== "approved" && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              if (window.confirm("El enlace anterior dejará de funcionar. ¿Crear uno nuevo?")) {
+                run(() => renewDiscoveryLink(sessionId));
+              }
+            }}
+            className="h-11 rounded-lg border border-border px-4 text-sm font-semibold text-secondary disabled:opacity-50"
+          >
+            Renovar enlace por 7 días
+          </button>
+        )}
       </div>
       {pending && <p className="mt-3 text-sm text-muted">Aplicando cambio…</p>}
       {result?.message && (
@@ -72,6 +108,11 @@ export function SessionActionPanel({ sessionId, status, reopenRequested }: { ses
             {copied ? "Enlace copiado" : "Copiar enlace"}
           </button>
         </div>
+      )}
+      {result?.destination && (
+        <Link href={result.destination} className="mt-3 inline-flex text-sm font-semibold text-primary hover:text-primary-hover">
+          Ir al cliente →
+        </Link>
       )}
     </aside>
   );

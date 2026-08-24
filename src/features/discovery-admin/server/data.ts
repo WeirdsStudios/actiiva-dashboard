@@ -19,6 +19,7 @@ export interface AdminDiscoverySessionSummary {
   messageCount: number;
   answeredCount: number;
   totalQuestions: number;
+  organizationId: string | null;
 }
 
 export async function listAdminDiscoverySessions(): Promise<AdminDiscoverySessionSummary[]> {
@@ -27,7 +28,7 @@ export async function listAdminDiscoverySessions(): Promise<AdminDiscoverySessio
   const { data: sessions, error } = await supabaseAdmin
     .from("discovery_sessions")
     .select(
-      "id, business_name_draft, status, pack_version, created_at, updated_at, submitted_at, token_expires_at, reopen_requested_at, reopen_authorized_until, message_count",
+      "id, business_name_draft, status, pack_version, tenant_id, created_at, updated_at, submitted_at, token_expires_at, reopen_requested_at, reopen_authorized_until, message_count",
     )
     .order("updated_at", { ascending: false });
   if (error) throw new Error(`No se pudieron cargar las sesiones: ${error.message}`);
@@ -59,6 +60,7 @@ export async function listAdminDiscoverySessions(): Promise<AdminDiscoverySessio
     messageCount: session.message_count ?? 0,
     answeredCount: answeredBySession.get(session.id) ?? 0,
     totalQuestions: questionPackActiiva.questions.length,
+    organizationId: session.tenant_id,
   }));
 }
 
@@ -70,7 +72,7 @@ export async function getAdminDiscoverySession(sessionId: string) {
       supabaseAdmin
         .from("discovery_sessions")
         .select(
-          "id, access_token, business_name_draft, status, pack_id, pack_version, created_at, updated_at, submitted_at, approved_at, token_expires_at, reopen_requested_at, reopen_authorized_until, message_count",
+          "id, access_token, business_name_draft, status, pack_id, pack_version, tenant_id, created_at, updated_at, submitted_at, approved_at, token_expires_at, reopen_requested_at, reopen_authorized_until, message_count",
         )
         .eq("id", sessionId)
         .maybeSingle(),
@@ -93,6 +95,14 @@ export async function getAdminDiscoverySession(sessionId: string) {
 
   const latestExports = await getLatestExports(sessionId);
   const prompts = new Map(questionPackActiiva.questions.map((question) => [question.id, question.prompt]));
+  const { data: organization, error: organizationError } = session.tenant_id
+    ? await supabaseAdmin
+        .from("organizations")
+        .select("id, name, slug, status")
+        .eq("id", session.tenant_id)
+        .maybeSingle()
+    : { data: null, error: null };
+  if (organizationError) throw new Error(`No se pudo cargar el cliente vinculado: ${organizationError.message}`);
 
   return {
     session,
@@ -102,5 +112,6 @@ export async function getAdminDiscoverySession(sessionId: string) {
     })),
     assets: assets ?? [],
     latestExports,
+    organization,
   };
 }
