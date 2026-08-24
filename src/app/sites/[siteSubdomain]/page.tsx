@@ -18,7 +18,29 @@ function occurrenceDate(value: string, compact = false): string {
 export async function generateMetadata({ params }: { params: Promise<{ siteSubdomain: string }> }): Promise<Metadata> {
   const { siteSubdomain } = await params;
   const platform = await getPublicGymPlatform(siteSubdomain);
-  return platform ? { title: `${platform.site.name} — Entrena con intención`, description: platform.site.description } : {};
+  if (!platform) return {};
+  const title = `${platform.site.name} — Entrena con intención`;
+  const canonicalUrl = `https://${platform.site.subdomain}.actiiva.mx`;
+  return {
+    metadataBase: new URL(canonicalUrl),
+    title,
+    description: platform.site.description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      title,
+      description: platform.site.description,
+      url: "/",
+      siteName: platform.site.name,
+      locale: "es_MX",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: platform.site.description,
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 export default async function GymPublicPage({ params }: { params: Promise<{ siteSubdomain: string }> }) {
