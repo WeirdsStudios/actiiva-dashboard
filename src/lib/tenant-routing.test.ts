@@ -12,6 +12,12 @@ describe("tenant routing", () => {
   test("rewrites while preserving the visible path", () => {
     expect(tenantRewritePath("mexgym", "/")).toBe("/sites/mexgym");
     expect(tenantRewritePath("mexgym", "/gestion")).toBe("/sites/mexgym/gestion");
+    expect(tenantRewritePath("mexgym", "/sites/mexgym/opengraph-image")).toBe(
+      "/sites/mexgym/opengraph-image",
+    );
+    expect(tenantRewritePath("mexgym", "/sites/mexgym/twitter-image")).toBe(
+      "/sites/mexgym/twitter-image",
+    );
   });
 
   test("refreshes auth only for member and management surfaces", () => {

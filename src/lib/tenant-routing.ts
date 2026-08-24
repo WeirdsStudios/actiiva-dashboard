@@ -10,6 +10,12 @@ export function tenantSubdomainFromHost(hostHeader: string | null): string | nul
 }
 
 export function tenantRewritePath(subdomain: string, pathname: string): string {
+  if (
+    pathname === `/sites/${subdomain}/opengraph-image` ||
+    pathname === `/sites/${subdomain}/twitter-image`
+  ) {
+    return pathname;
+  }
   const suffix = pathname === "/" ? "" : pathname;
   return `/sites/${subdomain}${suffix}`;
 }

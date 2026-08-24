@@ -9,6 +9,7 @@ export async function proxy(request: NextRequest) {
   if (tenantSubdomain) {
     const rewriteUrl = request.nextUrl.clone();
     rewriteUrl.pathname = tenantRewritePath(tenantSubdomain, pathname);
+    if (rewriteUrl.pathname === pathname) return NextResponse.next();
     if (isTenantAuthenticatedPath(pathname)) return refreshSupabaseSession(request, rewriteUrl);
     return NextResponse.rewrite(rewriteUrl);
   }
