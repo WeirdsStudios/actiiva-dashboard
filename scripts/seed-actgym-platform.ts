@@ -186,6 +186,9 @@ const customers = [
   { organization_id: organizationId, plan_id: planId.get("progreso"), name: "Fernanda Gil", email: "fernanda.gil@example.com", status: "active", joined_on: "2026-07-11", next_payment_on: "2026-09-11" },
   { organization_id: organizationId, plan_id: planId.get("alto-rendimiento"), name: "Marco Luna", email: "marco.luna@example.com", status: "active", joined_on: "2026-07-30", next_payment_on: "2026-09-30" },
   { organization_id: organizationId, plan_id: planId.get("base"), name: "Lucía Paredes", email: "lucia.paredes@example.com", status: "lead", joined_on: null, next_payment_on: null },
+  { organization_id: organizationId, plan_id: planId.get("base"), name: "Elena Paz", email: "elena.paz@example.com", status: "active", joined_on: "2026-08-01", next_payment_on: "2026-09-01" },
+  { organization_id: organizationId, plan_id: planId.get("progreso"), name: "Bruno Silva", email: "bruno.silva@example.com", status: "active", joined_on: "2026-08-04", next_payment_on: "2026-09-04" },
+  { organization_id: organizationId, plan_id: planId.get("alto-rendimiento"), name: "Dana Ortiz", email: "dana.ortiz@example.com", status: "active", joined_on: "2026-08-08", next_payment_on: "2026-09-08" },
 ];
 
 const { error: customersError } = await supabaseAdmin
@@ -195,9 +198,47 @@ if (customersError) throw customersError;
 
 const [{ data: storedClasses, error: storedClassesError }, { data: storedCustomers, error: storedCustomersError }] = await Promise.all([
   supabaseAdmin.from("gym_classes").select("id, slug, weekdays").eq("organization_id", organizationId),
-  supabaseAdmin.from("gym_customers").select("id, email, status").eq("organization_id", organizationId),
+  supabaseAdmin.from("gym_customers").select("id, email, status, plan_id").eq("organization_id", organizationId),
 ]);
 if (storedClassesError || storedCustomersError) throw storedClassesError ?? storedCustomersError;
+
+const { data: currentMemberships, error: currentMembershipsError } = await supabaseAdmin
+  .from("gym_customer_memberships")
+  .select("customer_id")
+  .eq("organization_id", organizationId)
+  .in("status", ["active", "paused"]);
+if (currentMembershipsError) throw currentMembershipsError;
+const customersWithMembership = new Set((currentMemberships ?? []).map((membership) => membership.customer_id));
+const planConfigBySlug = new Map(plans.map((plan) => [plan.slug, plan]));
+const planSlugById = new Map([...planId.entries()].map(([slug, id]) => [id, slug]));
+const seedStart = new Date();
+seedStart.setUTCHours(12, 0, 0, 0);
+const seedEnd = new Date(seedStart);
+seedEnd.setUTCDate(seedStart.getUTCDate() + 29);
+const missingMemberships = (storedCustomers ?? []).flatMap((customer) => {
+  if (customer.status !== "active" || customersWithMembership.has(customer.id)) return [];
+  const slug = customer.plan_id ? planSlugById.get(customer.plan_id) : null;
+  const plan = slug ? planConfigBySlug.get(slug) : null;
+  if (!plan || !customer.plan_id) return [];
+  const graceEnd = new Date(seedEnd);
+  graceEnd.setUTCDate(seedEnd.getUTCDate() + plan.grace_days);
+  return [{
+    organization_id: organizationId,
+    customer_id: customer.id,
+    plan_id: customer.plan_id,
+    status: "active",
+    starts_on: seedStart.toISOString().slice(0, 10),
+    ends_on: seedEnd.toISOString().slice(0, 10),
+    grace_ends_on: graceEnd.toISOString().slice(0, 10),
+    price_cents: plan.price_cents,
+    class_credits_total: plan.class_access === "credits" ? plan.class_credits : null,
+    source: "manual",
+  }];
+});
+if (missingMemberships.length) {
+  const { error: missingMembershipsError } = await supabaseAdmin.from("gym_customer_memberships").insert(missingMemberships);
+  if (missingMembershipsError) throw missingMembershipsError;
+}
 
 function nextOccurrence(weekdays: number[]): string {
   const candidate = new Date();
@@ -226,12 +267,27 @@ const powerDate = nextOccurrence(powerClass.weekdays);
 const reservations = [
   ...testQueue.slice(0, 6).map((customer) => ({ organization_id: organizationId, class_id: forceClass.id, customer_id: customer.id, class_date: forceDate, status: "reserved" })),
   ...testQueue.slice(0, 4).map((customer) => ({ organization_id: organizationId, class_id: engineClass.id, customer_id: customer.id, class_date: engineDate, status: "reserved" })),
-  ...testQueue.slice(0, 9).map((customer, index) => ({ organization_id: organizationId, class_id: powerClass.id, customer_id: customer.id, class_date: powerDate, status: index < 8 ? "reserved" : "waitlisted" })),
+  ...testQueue.slice(0, 12).map((customer, index) => ({ organization_id: organizationId, class_id: powerClass.id, customer_id: customer.id, class_date: powerDate, status: index < 8 ? "reserved" : "waitlisted" })),
 ];
-const { error: reservationsError } = await supabaseAdmin
+const { data: storedReservations, error: reservationsError } = await supabaseAdmin
   .from("gym_class_reservations")
-  .upsert(reservations, { onConflict: "class_id,customer_id,class_date" });
+  .upsert(reservations, { onConflict: "class_id,customer_id,class_date" })
+  .select("id, class_id, customer_id, class_date, status");
 if (reservationsError) throw reservationsError;
+
+const powerWaitlist = (storedReservations ?? []).filter((reservation) => reservation.class_id === powerClass.id && reservation.status === "waitlisted");
+const demandRequests = powerWaitlist.slice(0, 4).map((reservation) => ({
+  organization_id: organizationId,
+  class_id: powerClass.id,
+  customer_id: reservation.customer_id,
+  source_reservation_id: reservation.id,
+  preferred_weekday: 6,
+  preferred_time_window: "morning",
+  status: "open",
+}));
+const { error: demandError } = await supabaseAdmin.from("gym_schedule_requests")
+  .upsert(demandRequests, { onConflict: "class_id,customer_id,preferred_weekday,preferred_time_window" });
+if (demandError) throw demandError;
 
 console.log(JSON.stringify({
   organizationId,
@@ -240,7 +296,7 @@ console.log(JSON.stringify({
   classes: classes.length,
   customers: customers.length,
   reservations: reservations.length,
-  demandSignals: 0,
+  demandSignals: demandRequests.length,
   catalogItems: catalog.length,
   inventoryItems: inventoryItems?.length ?? 0,
 }));
