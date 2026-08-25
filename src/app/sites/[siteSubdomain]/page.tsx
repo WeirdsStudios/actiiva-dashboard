@@ -15,6 +15,11 @@ function occurrenceDate(value: string, compact = false): string {
     .format(new Date(`${value}T12:00:00`));
 }
 
+function planPeriod(plan: { durationCount: number; durationUnit: "day" | "week" | "month" | "year" }): string {
+  const units = { day: ["día", "días"], week: ["semana", "semanas"], month: ["mes", "meses"], year: ["año", "años"] } as const;
+  return plan.durationCount === 1 ? `/ ${units[plan.durationUnit][0]}` : `/ ${plan.durationCount} ${units[plan.durationUnit][1]}`;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ siteSubdomain: string }> }): Promise<Metadata> {
   const { siteSubdomain } = await params;
   const platform = await getPublicGymPlatform(siteSubdomain);
@@ -96,8 +101,9 @@ export default async function GymPublicPage({ params }: { params: Promise<{ site
           {plans.map((plan, index) => (
             <article key={plan.id} className={index === 1 ? "is-featured" : ""}>
               <span className="gym-plan-number">0{index + 1}</span><h3>{plan.name}</h3><p>{plan.description}</p>
-              <div className="gym-price"><strong>{money(plan.priceCents)}</strong><span>/ mes</span></div>
+              <div className="gym-price"><strong>{money(plan.priceCents)}</strong><span>{planPeriod(plan)}</span></div>
               <ul>{plan.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
+              <p className="gym-plan-access">{plan.classAccess === "unlimited" ? "Clases ilimitadas" : plan.classAccess === "credits" ? `${plan.classCredits} clases por periodo` : "Acceso sin clases"} · {plan.graceDays ? `${plan.graceDays} días de tolerancia` : "Sin días de tolerancia"}</p>
               <Link href="/mi-cuenta">Acceder como socio →</Link>
             </article>
           ))}

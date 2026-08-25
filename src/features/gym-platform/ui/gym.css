@@ -272,6 +272,140 @@
 .gym-manage-classes small, .gym-manage-plans small { color: var(--gym-steel); font-size: 9px; }
 .gym-manage-classes article > span, .gym-manage-plans article > span { margin-left: auto; font-size: 10px; }
 
+.gym-commerce-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+.gym-pos-form, .gym-cash-form, .gym-inventory-form, .gym-catalog-form, .gym-plan-settings, .gym-operations-settings { border: 1px solid var(--gym-line); background: var(--gym-paper); }
+.gym-pos-form { padding: 24px; }
+.gym-pos-form label, .gym-cash-form label, .gym-inventory-form label, .gym-catalog-form label, .gym-plan-settings label, .gym-operations-settings label, .gym-demand-approval label { display: grid; gap: 7px; color: var(--gym-steel); font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.gym-pos-form select, .gym-pos-form input, .gym-cash-form input, .gym-inventory-form select, .gym-inventory-form input, .gym-catalog-form select, .gym-catalog-form input, .gym-plan-settings input, .gym-plan-settings select, .gym-operations-settings input, .gym-demand-approval input { width: 100%; height: 42px; border: 1px solid var(--gym-line); border-radius: 0; background: white; color: var(--gym-ink); padding: 0 11px; font: inherit; font-size: 11px; text-transform: none; }
+.gym-pos-context { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.gym-pos-context em, .gym-pos-context small, .gym-pos-payment small { color: var(--gym-accent); font-size: 8px; font-style: normal; }
+.gym-pos-lines { display: grid; gap: 1px; background: var(--gym-line); border: 1px solid var(--gym-line); }
+.gym-pos-line { display: grid; grid-template-columns: minmax(0, 1fr) 90px 120px 30px; gap: 12px; align-items: end; padding: 13px; background: #f6f6f3; }
+.gym-pos-line > strong { align-self: center; text-align: right; font-size: 14px; }
+.gym-pos-line > button { align-self: center; width: 30px; height: 30px; border: 0; background: transparent; color: var(--gym-steel); cursor: pointer; font-size: 20px; }
+.gym-pos-add { margin-top: 10px; border: 0; background: transparent; color: var(--gym-steel); cursor: pointer; font-size: 10px; font-weight: 700; }
+.gym-pos-payment { display: grid; grid-template-columns: 1fr 1fr 160px; gap: 12px; align-items: end; margin-top: 22px; }
+.gym-pos-total { display: grid; gap: 5px; text-align: right; }
+.gym-pos-total span { color: var(--gym-steel); font-size: 9px; text-transform: uppercase; }
+.gym-pos-total strong { font-family: var(--font-gym-display); font-size: 35px; font-weight: 400; line-height: 1; }
+.gym-pos-charge, .gym-plan-settings > button, .gym-operations-settings > button { width: 100%; min-height: 46px; margin-top: 18px; border: 0; background: var(--gym-ink); color: white; cursor: pointer; font-size: 11px; font-weight: 800; }
+.gym-pos-charge:hover, .gym-plan-settings > button:hover, .gym-operations-settings > button:hover { background: var(--gym-accent); color: var(--gym-ink); }
+.gym-pos-form > p, .gym-cash-form > p, .gym-inventory-form > p, .gym-catalog-form > p, .gym-plan-settings > p, .gym-operations-settings > p, .gym-demand-approval > p { margin-top: 12px; font-size: 10px; line-height: 1.5; }
+.gym-pos-form .is-ok, .gym-cash-form .is-ok, .gym-inventory-form .is-ok, .gym-catalog-form .is-ok, .gym-plan-settings .is-ok, .gym-operations-settings .is-ok, .gym-demand-approval .is-ok { color: #347052; }
+.gym-pos-form .is-error, .gym-cash-form .is-error, .gym-inventory-form .is-error, .gym-catalog-form .is-error, .gym-plan-settings .is-error, .gym-operations-settings .is-error, .gym-demand-approval .is-error { color: #944531; }
+.gym-pos-form > p a { margin-left: 8px; text-decoration: underline; }
+.gym-cash-form { padding: 24px; background: #242a30; color: white; }
+.gym-cash-stack { display: grid; gap: 12px; }
+.gym-cash-form > div:first-child { display: grid; gap: 8px; min-height: 98px; }
+.gym-cash-form > div:first-child span { color: var(--gym-accent); font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; }
+.gym-cash-form > div:first-child strong { font-size: 17px; line-height: 1.4; }
+.gym-cash-form label { color: rgba(255,255,255,.55); }
+.gym-cash-form label > div { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; background: white; color: var(--gym-ink); }
+.gym-cash-form label input { border: 0; }
+.gym-cash-form label small { padding-right: 10px; color: var(--gym-steel); font-size: 8px; }
+.gym-cash-form > button { width: 100%; height: 44px; margin-top: 14px; border: 0; background: var(--gym-accent); color: var(--gym-ink); cursor: pointer; font-size: 10px; font-weight: 800; }
+.gym-payments-table { border-top: 2px solid var(--gym-ink); }
+.gym-payment-row { display: grid; grid-template-columns: 80px 1fr .7fr .7fr 130px; gap: 14px; align-items: center; min-height: 64px; padding: 12px 15px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); font-size: 10px; }
+.gym-payment-row.is-head { min-height: 38px; background: transparent; color: var(--gym-steel); font-size: 8px; letter-spacing: .06em; text-transform: uppercase; }
+.gym-payment-row > div { display: grid; justify-items: end; gap: 4px; }
+.gym-payment-row a { color: var(--gym-steel); font-size: 8px; text-decoration: underline; }
+.gym-table-empty { padding: 28px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); color: var(--gym-steel); font-size: 11px; }
+.gym-inventory-layout { display: grid; grid-template-columns: 1fr 360px; gap: 18px; align-items: start; }
+.gym-inventory-list { border-top: 2px solid var(--gym-ink); }
+.gym-inventory-list article { display: grid; grid-template-columns: 1fr 90px 120px; gap: 15px; align-items: center; min-height: 75px; padding: 13px 16px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
+.gym-inventory-list article > div { display: grid; gap: 4px; }
+.gym-inventory-list article small { color: var(--gym-steel); font-size: 8px; }
+.gym-inventory-list article > span { display: grid; font-family: var(--font-gym-display); font-size: 28px; line-height: .8; }
+.gym-inventory-list article > em { color: var(--gym-steel); font-size: 9px; font-style: normal; }
+.gym-inventory-list article.is-low { box-shadow: inset 4px 0 #c78342; }
+.gym-inventory-form { display: grid; gap: 13px; padding: 22px; }
+.gym-inventory-form > button, .gym-catalog-form > button { height: 42px; border: 0; background: var(--gym-ink); color: white; cursor: pointer; font-size: 10px; font-weight: 800; }
+.gym-inventory-tools { display: grid; gap: 12px; }
+.gym-catalog-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 22px; }
+.gym-catalog-form header, .gym-catalog-form > button, .gym-catalog-form > p { grid-column: 1 / -1; }
+.gym-catalog-form header h3 { margin-top: 5px; font-size: 18px; }
+.gym-catalog-form label small { color: var(--gym-steel); font-size: 8px; }
+.gym-table-row > span:nth-child(2) { display: grid; gap: 4px; }
+.gym-table-row > span:nth-child(2) small { display: block; }
+.gym-plan-settings-list { display: grid; gap: 12px; }
+.gym-plan-settings { padding: 20px; }
+.gym-plan-settings header { display: grid; grid-template-columns: 1fr 180px; gap: 20px; align-items: end; padding-bottom: 16px; border-bottom: 1px solid var(--gym-line); }
+.gym-plan-settings header > div { display: grid; gap: 4px; }
+.gym-plan-settings header strong { font-size: 17px; }
+.gym-plan-settings header small { color: var(--gym-steel); font-size: 8px; }
+.gym-plan-settings-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: end; margin-top: 16px; }
+.gym-check-field { display: flex !important; flex-direction: row; align-items: center; line-height: 1.4; }
+.gym-check-field input { width: 16px; height: 16px; }
+.gym-settings-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 18px; }
+.gym-operations-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 22px; }
+.gym-operations-settings > button, .gym-operations-settings > p { grid-column: 1 / -1; }
+.gym-operations-settings label { position: relative; }
+.gym-operations-settings label small { position: absolute; right: 10px; bottom: 14px; color: var(--gym-steel); }
+.gym-integrations-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; border: 1px solid var(--gym-line); background: var(--gym-line); }
+.gym-integrations-panel article { padding: 22px; background: var(--gym-paper); }
+.gym-integrations-panel article > div { display: flex; gap: 10px; align-items: center; }
+.gym-integrations-panel article > div span { display: grid; width: 32px; height: 32px; place-items: center; background: var(--gym-ink); color: white; font-size: 9px; }
+.gym-integrations-panel em { display: block; width: fit-content; margin-top: 20px; padding: 5px 7px; background: #f2e6d5; color: #80591e; font-size: 8px; font-style: normal; text-transform: uppercase; }
+.gym-integrations-panel p { margin-top: 10px; color: var(--gym-steel); font-size: 9px; line-height: 1.55; }
+.gym-demand-approval { grid-column: 1 / -1; display: grid; grid-template-columns: 1.4fr .6fr .8fr; gap: 9px; margin-top: 4px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,.18); }
+.gym-demand-approval button { grid-column: 1 / -1; height: 40px; border: 1px solid var(--gym-ink); background: var(--gym-ink); color: white; cursor: pointer; font-size: 9px; font-weight: 800; }
+.gym-renewal-state { display: grid; gap: 5px; margin-top: 22px; padding: 14px; background: #f2f1ed; }
+.gym-renewal-state strong { font-size: 13px; }
+.gym-renewal-state span { color: var(--gym-steel); font-size: 9px; line-height: 1.45; }
+.gym-member-holds { margin-top: 52px; }
+.gym-member-holds > div:last-child { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; border: 1px solid var(--gym-line); background: var(--gym-line); }
+.gym-member-holds article { display: grid; grid-template-columns: 1fr auto; gap: 20px; padding: 24px; background: var(--gym-paper); box-shadow: inset 4px 0 var(--gym-accent); }
+.gym-member-holds article.is-confirmed { box-shadow: inset 4px 0 #4e8b70; }
+.gym-member-holds article > div { display: grid; gap: 5px; }
+.gym-member-holds article > div > span { color: var(--gym-accent); font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; }
+.gym-member-holds article.is-confirmed > div > span { color: #4e8b70; }
+.gym-member-holds article h3 { font-size: 18px; }
+.gym-member-holds article p, .gym-member-holds article small { color: var(--gym-steel); font-size: 9px; }
+.gym-member-holds article > strong { font-family: var(--font-gym-display); font-size: 25px; font-weight: 400; }
+.gym-hold-confirm-form, .gym-hold-payment-note { grid-column: 1 / -1; }
+.gym-hold-confirm-form button { width: 100%; height: 40px; border: 0; background: var(--gym-ink); color: white; cursor: pointer; font-size: 9px; font-weight: 800; }
+.gym-hold-confirm-form button:disabled { background: #dfe7e2; color: #39624e; }
+.gym-hold-confirm-form p { margin-top: 7px; font-size: 9px; }
+.gym-hold-confirm-form .is-ok { color: #347052; }
+.gym-hold-confirm-form .is-error { color: #944531; }
+.gym-hold-payment-note { padding: 10px; background: #f3e9d7; color: #80591e !important; line-height: 1.45; }
+.gym-member-payments { margin-top: 60px; }
+.gym-member-payment-list { border-top: 2px solid var(--gym-ink); }
+.gym-member-payment-list article { display: grid; grid-template-columns: 1fr auto 120px; gap: 20px; align-items: center; min-height: 72px; padding: 14px 18px; border-bottom: 1px solid var(--gym-line); background: var(--gym-paper); }
+.gym-member-payment-list article > div { display: grid; gap: 5px; }
+.gym-member-payment-list article span, .gym-member-payment-list article a { color: var(--gym-steel); font-size: 9px; }
+.gym-member-payment-list article a { text-align: right; text-decoration: underline; }
+.gym-member-empty { padding: 25px; background: var(--gym-paper); color: var(--gym-steel); font-size: 10px; }
+.gym-member-profile { margin-top: 60px; }
+.gym-member-profile-form { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; padding: 24px; border-top: 2px solid var(--gym-ink); background: var(--gym-paper); }
+.gym-member-profile-form > div { align-self: center; }
+.gym-member-profile-form h2 { margin-top: 5px; font-size: 20px; }
+.gym-member-profile-form > div span { display: block; margin-top: 7px; color: var(--gym-steel); font-size: 8px; line-height: 1.4; }
+.gym-member-profile-form label { display: grid; gap: 7px; color: var(--gym-steel); font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.gym-member-profile-form input { width: 100%; height: 42px; border: 1px solid var(--gym-line); background: white; padding: 0 10px; font-size: 10px; }
+.gym-member-profile-form button { height: 42px; border: 0; background: var(--gym-ink); color: white; padding: 0 18px; cursor: pointer; font-size: 9px; font-weight: 800; white-space: nowrap; }
+.gym-member-profile-form > p { grid-column: 2 / -1; font-size: 9px; }
+.gym-member-profile-form .is-ok { color: #347052; }
+.gym-member-profile-form .is-error { color: #944531; }
+.gym-receipt-page { min-height: 100vh; padding: 60px 20px; background: #e8e8e4; }
+.gym-receipt { width: min(720px, 100%); margin: 0 auto; padding: 46px; background: white; box-shadow: 0 22px 65px rgba(31,35,38,.12); }
+.gym-receipt header { display: grid; grid-template-columns: 1fr auto; gap: 30px; padding-bottom: 28px; border-bottom: 2px solid var(--gym-ink); }
+.gym-receipt header > div { display: grid; gap: 5px; }
+.gym-receipt header > div:last-child { justify-items: end; text-align: right; }
+.gym-receipt header p, .gym-receipt header span, .gym-receipt header time { color: var(--gym-steel); font-size: 9px; }
+.gym-receipt header h1 { font-family: var(--font-gym-display); font-size: 42px; font-weight: 400; }
+.gym-receipt header > div:last-child > strong { color: var(--gym-accent); font-family: var(--font-gym-display); font-size: 38px; font-weight: 400; }
+.gym-receipt-customer { display: grid; gap: 5px; padding: 20px 0; border-bottom: 1px solid var(--gym-line); }
+.gym-receipt-customer span, .gym-receipt footer span { color: var(--gym-steel); font-size: 8px; text-transform: uppercase; }
+.gym-receipt-lines > div { display: grid; grid-template-columns: 1fr 130px 110px; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--gym-line); font-size: 10px; }
+.gym-receipt-lines > div small, .gym-receipt-lines > div strong { text-align: right; }
+.gym-receipt dl { margin: 20px 0 0 auto; width: min(330px, 100%); }
+.gym-receipt dl > div { display: flex; justify-content: space-between; padding: 7px 0; font-size: 10px; }
+.gym-receipt dl .is-total { margin-top: 8px; padding-top: 14px; border-top: 2px solid var(--gym-ink); font-size: 16px; font-weight: 800; }
+.gym-receipt footer { display: grid; grid-template-columns: .7fr 1.3fr; gap: 30px; margin-top: 35px; padding-top: 22px; border-top: 1px solid var(--gym-line); }
+.gym-receipt footer > div { display: grid; gap: 5px; }
+.gym-receipt footer p { color: var(--gym-steel); font-size: 8px; line-height: 1.55; }
+
 @media (max-width: 980px) {
   .gym-public-header { grid-template-columns: 1fr auto; }
   .gym-public-header nav { display: none; }
@@ -286,6 +420,8 @@
   .gym-management-shell { grid-template-columns: 1fr; }
   .gym-management-nav { display: none; }
   .gym-management-columns { grid-template-columns: 1fr; }
+  .gym-commerce-grid, .gym-inventory-layout, .gym-settings-grid { grid-template-columns: 1fr; }
+  .gym-plan-settings-grid { grid-template-columns: repeat(3, 1fr); }
   .gym-operations-calendar article { grid-template-columns: 100px 1fr; }
   .gym-operation-roster { grid-column: 2; border-left: 0; padding-left: 0; }
 }
@@ -334,6 +470,26 @@
   .gym-operation-date { display: flex; justify-content: space-between; align-items: baseline; }
   .gym-operation-roster { grid-column: 1; border-top: 1px solid var(--gym-line); padding: 12px 0 0; }
   .gym-demand-insights { margin-right: -16px; margin-left: -16px; padding: 30px 16px; }
+  .gym-pos-context, .gym-pos-payment, .gym-operations-settings, .gym-integrations-panel { grid-template-columns: 1fr; }
+  .gym-catalog-form { grid-template-columns: 1fr; }
+  .gym-catalog-form header, .gym-catalog-form > button, .gym-catalog-form > p { grid-column: 1; }
+  .gym-pos-line { grid-template-columns: 1fr 70px; }
+  .gym-pos-line > strong { text-align: left; }
+  .gym-plan-settings header, .gym-plan-settings-grid { grid-template-columns: 1fr 1fr; }
+  .gym-payment-row { grid-template-columns: 60px 1fr auto; }
+  .gym-payment-row > span:nth-child(3), .gym-payment-row > span:nth-child(4), .gym-payment-row.is-head > span:nth-child(3), .gym-payment-row.is-head > span:nth-child(4) { display: none; }
+  .gym-inventory-list article { grid-template-columns: 1fr auto; }
+  .gym-inventory-list article > em { grid-column: 1 / -1; }
+  .gym-member-payment-list article { grid-template-columns: 1fr auto; }
+  .gym-member-payment-list article a { grid-column: 1 / -1; text-align: left; }
+  .gym-receipt-page { padding: 0; }
+  .gym-receipt { padding: 28px 20px; box-shadow: none; }
+  .gym-receipt header, .gym-receipt footer { grid-template-columns: 1fr; }
+  .gym-receipt header > div:last-child { justify-items: start; text-align: left; }
+  .gym-receipt-lines > div { grid-template-columns: 1fr auto; }
+  .gym-receipt-lines > div small { display: none; }
+  .gym-member-holds > div:last-child, .gym-member-profile-form { grid-template-columns: 1fr; }
+  .gym-member-profile-form > p { grid-column: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

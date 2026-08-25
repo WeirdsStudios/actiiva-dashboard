@@ -2,11 +2,12 @@ import { describe, expect, test } from "bun:test";
 import { isTenantAuthenticatedPath, tenantRewritePath, tenantSubdomainFromHost } from "./tenant-routing";
 
 describe("tenant routing", () => {
-  test("recognizes only configured production and local subdomains", () => {
+  test("recognizes valid tenant subdomains without a code allowlist", () => {
     expect(tenantSubdomainFromHost("mexgym.actiiva.mx")).toBe("mexgym");
     expect(tenantSubdomainFromHost("mexgym.localhost:3000")).toBe("mexgym");
     expect(tenantSubdomainFromHost("onboarding.actiiva.mx")).toBeNull();
-    expect(tenantSubdomainFromHost("attacker.actiiva.mx")).toBeNull();
+    expect(tenantSubdomainFromHost("studiofit.actiiva.mx")).toBe("studiofit");
+    expect(tenantSubdomainFromHost("bad_name.actiiva.mx")).toBeNull();
   });
 
   test("rewrites while preserving the visible path", () => {

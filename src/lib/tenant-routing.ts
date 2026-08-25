@@ -1,4 +1,4 @@
-const TENANT_SUBDOMAINS = new Set(["mexgym"]);
+const RESERVED_SUBDOMAINS = new Set(["www", "onboarding", "app", "admin", "api", "status"]);
 
 export function tenantSubdomainFromHost(hostHeader: string | null): string | null {
   if (!hostHeader) return null;
@@ -6,7 +6,13 @@ export function tenantSubdomainFromHost(hostHeader: string | null): string | nul
   let candidate: string | null = null;
   if (hostname.endsWith(".actiiva.mx")) candidate = hostname.slice(0, -".actiiva.mx".length);
   if (hostname.endsWith(".localhost")) candidate = hostname.slice(0, -".localhost".length);
-  return candidate && TENANT_SUBDOMAINS.has(candidate) ? candidate : null;
+  return candidate
+    && candidate.length >= 2
+    && candidate.length <= 63
+    && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(candidate)
+    && !RESERVED_SUBDOMAINS.has(candidate)
+    ? candidate
+    : null;
 }
 
 export function tenantRewritePath(subdomain: string, pathname: string): string {

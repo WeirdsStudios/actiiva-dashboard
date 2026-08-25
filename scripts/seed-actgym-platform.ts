@@ -28,6 +28,10 @@ const { error: siteError } = await supabaseAdmin.from("organization_sites").upse
   phone: "55 0000 2040",
   primary_color: "#20252B",
   accent_color: "#FF6B4A",
+  schedule_interest_threshold: 4,
+  demand_hold_hours: 24,
+  timezone: "America/Mexico_City",
+  currency: "MXN",
 });
 if (siteError) throw siteError;
 
@@ -38,6 +42,12 @@ const plans = [
     name: "Base",
     description: "Tu espacio para entrenar con libertad y estructura.",
     price_cents: 79900,
+    duration_count: 1,
+    duration_unit: "month",
+    class_access: "credits",
+    class_credits: 8,
+    grace_days: 2,
+    auto_renew_available: true,
     features: ["Acceso a piso de fuerza", "Evaluación inicial", "App de seguimiento"],
     published: true,
     sort_order: 1,
@@ -48,6 +58,12 @@ const plans = [
     name: "Progreso",
     description: "Acompañamiento constante para avanzar semana a semana.",
     price_cents: 129000,
+    duration_count: 1,
+    duration_unit: "month",
+    class_access: "unlimited",
+    class_credits: null,
+    grace_days: 3,
+    auto_renew_available: true,
     features: ["Todo lo de Base", "Clases grupales ilimitadas", "Evaluación mensual"],
     published: true,
     sort_order: 2,
@@ -58,6 +74,12 @@ const plans = [
     name: "Alto rendimiento",
     description: "Entrenamiento de precisión con seguimiento cercano.",
     price_cents: 189000,
+    duration_count: 1,
+    duration_unit: "month",
+    class_access: "unlimited",
+    class_credits: null,
+    grace_days: 5,
+    auto_renew_available: true,
     features: ["Todo lo de Progreso", "Programación personalizada", "Sesión técnica semanal"],
     published: true,
     sort_order: 3,
@@ -87,6 +109,69 @@ const { data: storedPlans, error: storedPlansError } = await supabaseAdmin
   .eq("organization_id", organizationId);
 if (storedPlansError) throw storedPlansError;
 const planId = new Map((storedPlans ?? []).map((plan) => [plan.slug, plan.id]));
+
+const membershipBalanceResults = await Promise.all(plans.map((plan) => supabaseAdmin
+  .from("gym_customer_memberships")
+  .update({
+    price_cents: plan.price_cents,
+    class_credits_total: plan.class_access === "credits" ? plan.class_credits : null,
+  })
+  .eq("organization_id", organizationId)
+  .eq("plan_id", planId.get(plan.slug))));
+const membershipBalanceError = membershipBalanceResults.find((result) => result.error)?.error;
+if (membershipBalanceError) throw membershipBalanceError;
+
+const catalog = [
+  ...plans.map((plan) => ({
+    organization_id: organizationId,
+    membership_plan_id: planId.get(plan.slug),
+    slug: `membresia-${plan.slug}`,
+    sku: `MEM-${plan.slug.toUpperCase()}`,
+    item_type: "membership",
+    name: plan.name,
+    description: plan.description,
+    price_cents: plan.price_cents,
+    cost_cents: 0,
+    tracks_inventory: false,
+    published: true,
+    active: true,
+  })),
+  { organization_id: organizationId, slug: "agua-mineral", sku: "BEB-AGUA", item_type: "product", name: "Agua mineral", description: "Botella fría de 600 ml", price_cents: 2500, cost_cents: 1100, tracks_inventory: true, published: false, active: true },
+  { organization_id: organizationId, slug: "proteina-lista", sku: "BEB-PROT", item_type: "product", name: "Proteína lista", description: "Bebida de proteína individual", price_cents: 6500, cost_cents: 3800, tracks_inventory: true, published: false, active: true },
+  { organization_id: organizationId, slug: "vendas-entrenamiento", sku: "ACC-VEND", item_type: "product", name: "Vendas de entrenamiento", description: "Par de vendas ACTGym", price_cents: 29900, cost_cents: 14500, tracks_inventory: true, published: false, active: true },
+  { organization_id: organizationId, slug: "evaluacion-corporal", sku: "SER-EVAL", item_type: "service", name: "Evaluación corporal", description: "Medición y revisión de objetivos", price_cents: 45000, cost_cents: 0, tracks_inventory: false, published: true, active: true },
+  { organization_id: organizationId, slug: "clase-visita", sku: "SER-DROP", item_type: "drop_in", name: "Clase de visita", description: "Una sesión para conocer ACTGym", price_cents: 18000, cost_cents: 0, tracks_inventory: false, published: true, active: true },
+];
+
+const { error: catalogError } = await supabaseAdmin
+  .from("gym_catalog_items")
+  .upsert(catalog, { onConflict: "organization_id,slug" });
+if (catalogError) throw catalogError;
+
+const [{ data: primaryBranch, error: branchError }, { data: inventoryItems, error: inventoryItemsError }] = await Promise.all([
+  supabaseAdmin.from("gym_branches").select("id").eq("organization_id", organizationId).eq("is_primary", true).single(),
+  supabaseAdmin.from("gym_catalog_items").select("id, slug").eq("organization_id", organizationId).eq("tracks_inventory", true),
+]);
+if (branchError || inventoryItemsError) throw branchError ?? inventoryItemsError;
+
+const openingInventory: Record<string, number> = { "agua-mineral": 48, "proteina-lista": 24, "vendas-entrenamiento": 12 };
+const { error: inventoryError } = await supabaseAdmin.from("gym_inventory_levels").upsert(
+  (inventoryItems ?? []).map((item) => ({
+    organization_id: organizationId,
+    branch_id: primaryBranch.id,
+    catalog_item_id: item.id,
+    quantity: openingInventory[item.slug] ?? 0,
+    reorder_point: item.slug === "agua-mineral" ? 12 : 5,
+  })),
+  { onConflict: "branch_id,catalog_item_id" },
+);
+if (inventoryError) throw inventoryError;
+
+const { error: connectionsError } = await supabaseAdmin.from("gym_provider_connections").upsert([
+  { organization_id: organizationId, provider: "mercado_pago", status: "disconnected", display_name: "Mercado Pago del negocio" },
+  { organization_id: organizationId, provider: "whatsapp", status: "disconnected", display_name: "WhatsApp de ACTGym" },
+], { onConflict: "organization_id,provider" });
+if (connectionsError) throw connectionsError;
 
 const customers = [
   { organization_id: organizationId, user_id: owner.id, plan_id: planId.get("progreso"), name: "Haza — socio demo", email: ownerEmail, status: "active", joined_on: "2026-05-12", next_payment_on: "2026-09-05" },
@@ -127,6 +212,8 @@ function nextOccurrence(weekdays: number[]): string {
 
 const classBySlug = new Map((storedClasses ?? []).map((gymClass) => [gymClass.slug, gymClass]));
 const activeCustomers = (storedCustomers ?? []).filter((customer) => customer.status === "active");
+const ownerCustomer = activeCustomers.find((customer) => customer.email === ownerEmail);
+const testQueue = [...activeCustomers.filter((customer) => customer.id !== ownerCustomer?.id), ...(ownerCustomer ? [ownerCustomer] : [])];
 const forceClass = classBySlug.get("fuerza-0600");
 const engineClass = classBySlug.get("engine-0700");
 const mobilityClass = classBySlug.get("movilidad-1830");
@@ -137,23 +224,14 @@ const forceDate = nextOccurrence(forceClass.weekdays);
 const engineDate = nextOccurrence(engineClass.weekdays);
 const powerDate = nextOccurrence(powerClass.weekdays);
 const reservations = [
-  ...activeCustomers.slice(0, 6).map((customer) => ({ organization_id: organizationId, class_id: forceClass.id, customer_id: customer.id, class_date: forceDate, status: "reserved" })),
-  ...activeCustomers.slice(0, 4).map((customer) => ({ organization_id: organizationId, class_id: engineClass.id, customer_id: customer.id, class_date: engineDate, status: "reserved" })),
-  ...activeCustomers.slice(0, 9).map((customer, index) => ({ organization_id: organizationId, class_id: powerClass.id, customer_id: customer.id, class_date: powerDate, status: index < 8 ? "reserved" : "waitlisted" })),
+  ...testQueue.slice(0, 6).map((customer) => ({ organization_id: organizationId, class_id: forceClass.id, customer_id: customer.id, class_date: forceDate, status: "reserved" })),
+  ...testQueue.slice(0, 4).map((customer) => ({ organization_id: organizationId, class_id: engineClass.id, customer_id: customer.id, class_date: engineDate, status: "reserved" })),
+  ...testQueue.slice(0, 9).map((customer, index) => ({ organization_id: organizationId, class_id: powerClass.id, customer_id: customer.id, class_date: powerDate, status: index < 8 ? "reserved" : "waitlisted" })),
 ];
 const { error: reservationsError } = await supabaseAdmin
   .from("gym_class_reservations")
   .upsert(reservations, { onConflict: "class_id,customer_id,class_date" });
 if (reservationsError) throw reservationsError;
-
-const demandRequests = [
-  ...activeCustomers.slice(0, 5).map((customer) => ({ organization_id: organizationId, class_id: engineClass.id, customer_id: customer.id, preferred_weekday: 1, preferred_time_window: "evening", status: "open" })),
-  ...activeCustomers.slice(0, 3).map((customer) => ({ organization_id: organizationId, class_id: mobilityClass.id, customer_id: customer.id, preferred_weekday: 6, preferred_time_window: "morning", status: "open" })),
-];
-const { error: demandError } = await supabaseAdmin
-  .from("gym_schedule_requests")
-  .upsert(demandRequests, { onConflict: "class_id,customer_id,preferred_weekday,preferred_time_window" });
-if (demandError) throw demandError;
 
 console.log(JSON.stringify({
   organizationId,
@@ -162,5 +240,7 @@ console.log(JSON.stringify({
   classes: classes.length,
   customers: customers.length,
   reservations: reservations.length,
-  demandSignals: demandRequests.length,
+  demandSignals: 0,
+  catalogItems: catalog.length,
+  inventoryItems: inventoryItems?.length ?? 0,
 }));
