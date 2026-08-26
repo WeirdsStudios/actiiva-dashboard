@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { isTenantAuthenticatedPath, tenantRewritePath, tenantSubdomainFromHost } from "./tenant-routing";
+import { isTenantAuthenticatedPath, isValidTenantSubdomain, tenantRewritePath, tenantSubdomainFromHost } from "./tenant-routing";
 
 describe("tenant routing", () => {
   test("recognizes valid tenant subdomains without a code allowlist", () => {
@@ -8,6 +8,13 @@ describe("tenant routing", () => {
     expect(tenantSubdomainFromHost("onboarding.actiiva.mx")).toBeNull();
     expect(tenantSubdomainFromHost("studiofit.actiiva.mx")).toBe("studiofit");
     expect(tenantSubdomainFromHost("bad_name.actiiva.mx")).toBeNull();
+  });
+
+  test("validates tenant names before provisioning", () => {
+    expect(isValidTenantSubdomain("studiofit")).toBe(true);
+    expect(isValidTenantSubdomain("studio-fit-2")).toBe(true);
+    expect(isValidTenantSubdomain("onboarding")).toBe(false);
+    expect(isValidTenantSubdomain("StudioFit")).toBe(false);
   });
 
   test("rewrites while preserving the visible path", () => {

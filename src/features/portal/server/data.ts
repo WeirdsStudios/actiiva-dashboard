@@ -13,6 +13,7 @@ export interface PortalOrganization {
   status: "active" | "suspended" | "archived";
   role: OrganizationRole;
   memberSince: string;
+  platform: { subdomain: string; status: "draft" | "published" | "paused" } | null;
 }
 
 export const getPortalIdentity = cache(async (): Promise<PortalIdentity | null> => {
@@ -41,13 +42,16 @@ export const listPortalOrganizations = cache(async (): Promise<PortalOrganizatio
   if (membershipError) throw new Error("No se pudieron cargar tus accesos.");
   if (!memberships?.length) return [];
 
-  const { data: organizations, error: organizationError } = await supabase
-    .from("organizations")
-    .select("id, name, slug, status")
-    .in("id", memberships.map((membership) => membership.organization_id));
+  const organizationIds = memberships.map((membership) => membership.organization_id);
+  const [{ data: organizations, error: organizationError }, { data: sites, error: siteError }] = await Promise.all([
+    supabase.from("organizations").select("id, name, slug, status").in("id", organizationIds),
+    supabase.from("organization_sites").select("organization_id, subdomain, status").in("organization_id", organizationIds),
+  ]);
   if (organizationError) throw new Error("No se pudieron cargar tus cuentas.");
+  if (siteError) throw new Error("No se pudieron cargar tus plataformas.");
 
   const byId = new Map((organizations ?? []).map((organization) => [organization.id, organization]));
+  const siteByOrganization = new Map((sites ?? []).map((site) => [site.organization_id, site]));
   return memberships.flatMap((membership) => {
     const organization = byId.get(membership.organization_id);
     if (!organization) return [];
@@ -58,6 +62,10 @@ export const listPortalOrganizations = cache(async (): Promise<PortalOrganizatio
       status: organization.status as PortalOrganization["status"],
       role: membership.role as OrganizationRole,
       memberSince: membership.created_at,
+      platform: siteByOrganization.has(organization.id) ? {
+        subdomain: String(siteByOrganization.get(organization.id)?.subdomain),
+        status: siteByOrganization.get(organization.id)?.status as "draft" | "published" | "paused",
+      } : null,
     }];
   });
 });

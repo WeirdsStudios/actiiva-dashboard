@@ -7,6 +7,12 @@ const STATUS_LABELS: Record<string, string> = {
   archived: "Archivado",
 };
 
+const PLATFORM_LABELS: Record<string, string> = {
+  draft: "En preparación",
+  published: "Publicada",
+  paused: "En pausa",
+};
+
 function formatDate(value: string | null): string {
   if (!value) return "—";
   return new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(value));
@@ -50,23 +56,26 @@ export default async function AdminClientsPage() {
         </section>
       ) : (
         <section className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-          <div className="hidden grid-cols-[minmax(260px,1.5fr)_120px_130px_160px_32px] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-[0.08em] text-muted uppercase md:grid">
-            <span>Cliente</span><span>Estado</span><span>Accesos</span><span>Activado</span><span />
+          <div className="hidden grid-cols-[minmax(220px,1.4fr)_110px_130px_100px_140px_32px] gap-4 border-b border-border px-5 py-3 text-xs font-semibold tracking-[0.08em] text-muted uppercase lg:grid">
+            <span>Cliente</span><span>Estado</span><span>Plataforma</span><span>Accesos</span><span>Activado</span><span />
           </div>
           {organizations.map((organization) => (
             <Link
               key={organization.id}
               href={`/admin/clients/${organization.id}`}
-              className="group grid gap-4 border-b border-border border-l-4 border-l-primary px-5 py-5 last:border-b-0 hover:bg-canvas md:grid-cols-[minmax(260px,1.5fr)_120px_130px_160px_32px] md:items-center"
+              className="group grid gap-4 border-b border-border border-l-4 border-l-primary px-5 py-5 last:border-b-0 hover:bg-canvas lg:grid-cols-[minmax(220px,1.4fr)_110px_130px_100px_140px_32px] lg:items-center"
             >
               <div className="min-w-0">
                 <p className="truncate font-semibold text-foreground">{organization.name}</p>
                 <p className="mt-1 truncate font-mono text-xs text-muted">{organization.slug}</p>
               </div>
               <span className="w-fit rounded-full bg-success-surface px-2.5 py-1 text-xs font-medium text-success">{STATUS_LABELS[organization.status] ?? organization.status}</span>
+              <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium ${organization.platformStatus === "published" ? "bg-success-surface text-success" : "bg-surface-subtle text-secondary"}`}>
+                {organization.platformStatus ? PLATFORM_LABELS[organization.platformStatus] ?? organization.platformStatus : "Sin crear"}
+              </span>
               <p className="text-sm text-secondary">{organization.memberCount} {organization.memberCount === 1 ? "miembro" : "miembros"}</p>
               <p className="text-sm text-muted">{formatDate(organization.createdAt)}</p>
-              <span className="hidden text-xl text-muted transition-transform group-hover:translate-x-1 md:block">→</span>
+              <span className="hidden text-xl text-muted transition-transform group-hover:translate-x-1 lg:block">→</span>
             </Link>
           ))}
         </section>

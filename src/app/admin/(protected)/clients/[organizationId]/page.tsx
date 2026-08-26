@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminOrganization } from "@/features/organizations/server/data";
 import { InviteMemberForm, MemberAccessList, type MemberAccessItem } from "@/features/organizations/ui/MemberAccessPanel";
+import { PlatformProvisioningPanel } from "@/features/platform-provisioning/ui/PlatformProvisioningPanel";
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Activo",
@@ -24,7 +25,7 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
   const { organizationId } = await params;
   const result = await getAdminOrganization(organizationId);
   if (!result) notFound();
-  const { organization, sessions, members } = result;
+  const { organization, sessions, members, sourceSessionId, previewPlanCount, previewClassCount, platform } = result;
   const primarySession = sessions[0] ?? null;
 
   return (
@@ -41,13 +42,14 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-foreground sm:text-5xl">{organization.name}</h1>
             <p className="mt-2 text-sm text-muted">Cliente ACTIIVA desde el {formatDate(organization.created_at)}</p>
           </div>
-          <div className="grid grid-cols-3 gap-2" aria-label="Recorrido de activación">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Recorrido de activación">
             {[
               ["Onboarding", primarySession?.created_at ?? null],
               ["Aprobación", primarySession?.approved_at ?? null],
               ["Cliente", organization.created_at],
+              ["Plataforma", platform?.provisionedAt ?? null],
             ].map(([label, date]) => (
-              <div key={label} className="min-w-24 border-t-2 border-primary pt-2">
+              <div key={label} className={`min-w-24 border-t-2 pt-2 ${date ? "border-primary" : "border-border"}`}>
                 <span className="block text-xs font-semibold text-foreground">{label}</span>
                 <span className="mt-0.5 block text-[11px] text-muted">{formatDate(date)}</span>
               </div>
@@ -75,6 +77,14 @@ export default async function AdminClientDetailPage({ params }: { params: Promis
         </section>
 
         <aside className="flex flex-col gap-4">
+          <PlatformProvisioningPanel
+            organizationId={organization.id}
+            sourceSessionId={sourceSessionId}
+            suggestedSubdomain={organization.slug.slice(0, 63)}
+            previewPlanCount={previewPlanCount}
+            previewClassCount={previewClassCount}
+            platform={platform}
+          />
           <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Acceso del cliente</p>
             <div className="mt-4 flex items-baseline justify-between border-b border-border pb-4">
